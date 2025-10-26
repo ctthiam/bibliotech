@@ -1,0 +1,240 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">
+          Votre bibliothèque
+          <span class="gradient-text">numérique</span>
+          au Sénégal
+        </h1>
+        <p class="hero-description">
+          Accédez à des milliers de livres, gérez vos emprunts en ligne et découvrez 
+          une nouvelle façon de lire avec BiblioTech.
+        </p>
+        <div class="hero-buttons">
+          <a *ngIf="!authService.isAuthenticated" routerLink="/register" class="btn btn-primary btn-lg">
+            <span>🚀</span>
+            Commencer gratuitement
+          </a>
+          <a *ngIf="authService.isAuthenticated" routerLink="/dashboard" class="btn btn-primary btn-lg">
+            <span>📊</span>
+            Mon tableau de bord
+          </a>
+          <a routerLink="/livres" class="btn btn-outline btn-lg">
+            <span>📚</span>
+            Parcourir le catalogue
+          </a>
+        </div>
+        
+        <!-- Stats -->
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-number">{{ stats.total_livres }}+</div>
+            <div class="stat-label">Livres disponibles</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ stats.lecteurs_actifs }}+</div>
+            <div class="stat-label">Lecteurs actifs</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Accès en ligne</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Hero Image -->
+      <div class="hero-image">
+        <div class="floating-card card-1">
+          <div class="book-mini">📕</div>
+          <div class="book-mini-info">
+            <strong>L'Aventure Ambiguë</strong>
+            <span>Cheikh H. Kane</span>
+          </div>
+        </div>
+        <div class="floating-card card-2">
+          <div class="book-mini">📗</div>
+          <div class="book-mini-info">
+            <strong>Une si longue lettre</strong>
+            <span>Mariama Bâ</span>
+          </div>
+        </div>
+        <div class="floating-card card-3">
+          <div class="book-mini">📘</div>
+          <div class="book-mini-info">
+            <strong>Le Ventre de l'Atlantique</strong>
+            <span>Fatou Diome</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section" id="features">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>Pourquoi choisir BiblioTech ?</h2>
+        <p>Une plateforme moderne pour une expérience de lecture unique</p>
+      </div>
+      
+      <div class="features-grid">
+        <div *ngFor="let feature of features" class="feature-card">
+          <div class="feature-icon">{{ feature.icon }}</div>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Livres Populaires -->
+  <section class="books-section" id="populaires">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>Livres populaires</h2>
+        <p>Les ouvrages les plus empruntés par nos lecteurs</p>
+      </div>
+      
+      <div *ngIf="loading" class="loading-container">
+        <div class="spinner"></div>
+      </div>
+
+      <div *ngIf="!loading" class="books-grid">
+        <a 
+          *ngFor="let livre of livresPopulaires" 
+          [routerLink]="['/livres', livre.id]"
+          class="book-card">
+          <div 
+            class="book-cover"
+            [style.background]="livre.image_couverture ? 'url(' + livre.image_couverture + ')' : getDefaultCover(livre.titre)">
+            <span *ngIf="!livre.image_couverture" class="book-placeholder">📖</span>
+          </div>
+          <div class="book-info">
+            <h4>{{ livre.titre }}</h4>
+            <p class="book-author">{{ livre.auteur }}</p>
+            <span 
+              class="badge" 
+              [ngClass]="livre.est_disponible ? 'badge-success' : 'badge-error'">
+              {{ livre.est_disponible ? '✓ Disponible' : '✗ Indisponible' }}
+            </span>
+          </div>
+        </a>
+      </div>
+
+      <div class="section-cta">
+        <a routerLink="/livres" class="btn btn-primary">
+          Voir tout le catalogue →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nouveautés -->
+  <section class="books-section alt-bg">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>Nouveautés</h2>
+        <p>Découvrez les derniers livres ajoutés à notre collection</p>
+      </div>
+      
+      <div *ngIf="!loading" class="books-grid">
+        <a 
+          *ngFor="let livre of nouveauxLivres" 
+          [routerLink]="['/livres', livre.id]"
+          class="book-card">
+          <div 
+            class="book-cover"
+            [style.background]="livre.image_couverture ? 'url(' + livre.image_couverture + ')' : getDefaultCover(livre.titre)">
+            <span *ngIf="!livre.image_couverture" class="book-placeholder">📖</span>
+          </div>
+          <div class="book-info">
+            <h4>{{ livre.titre }}</h4>
+            <p class="book-author">{{ livre.auteur }}</p>
+            <span 
+              class="badge" 
+              [ngClass]="livre.est_disponible ? 'badge-success' : 'badge-error'">
+              {{ livre.est_disponible ? '✓ Disponible' : '✗ Indisponible' }}
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials-section">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>Ce que disent nos lecteurs</h2>
+        <p>Des milliers d'utilisateurs satisfaits</p>
+      </div>
+      
+      <div class="testimonials-grid">
+        <div *ngFor="let testimonial of testimonials" class="testimonial-card">
+          <div class="rating">
+            <span *ngFor="let star of [1,2,3,4,5]">⭐</span>
+          </div>
+          <p class="testimonial-text">"{{ testimonial.comment }}"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">{{ testimonial.avatar }}</div>
+            <div>
+              <strong>{{ testimonial.name }}</strong>
+              <span class="author-role">{{ testimonial.role }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2>Prêt à commencer ?</h2>
+      <p>Rejoignez des milliers de lecteurs et découvrez BiblioTech dès aujourd'hui</p>
+      <div class="cta-buttons">
+        <a *ngIf="!authService.isAuthenticated" routerLink="/register" class="btn btn-primary btn-lg">
+          Créer mon compte gratuitement
+        </a>
+        <a *ngIf="authService.isAuthenticated" routerLink="/dashboard" class="btn btn-primary btn-lg">
+          Accéder à mon espace
+        </a>
+        <a routerLink="/livres" class="btn btn-outline btn-lg">
+          Explorer le catalogue
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>📚 BiblioTech</h3>
+        <p>Votre bibliothèque numérique au Sénégal</p>
+      </div>
+      <div class="footer-section">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a routerLink="/home">Accueil</a></li>
+          <li><a routerLink="/livres">Catalogue</a></li>
+          <li><a *ngIf="!authService.isAuthenticated" routerLink="/login">Connexion</a></li>
+          <li><a *ngIf="!authService.isAuthenticated" routerLink="/register">Inscription</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Contact</h4>
+        <ul>
+          <li>📧 contact&#64;bibliotech.sn</li>
+          <li>📞 +221 33 XXX XX XX</li>
+          <li>📍 Dakar, Sénégal</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 BiblioTech. Tous droits réservés.</p>
+    </div>
+  </footer>
+</div>

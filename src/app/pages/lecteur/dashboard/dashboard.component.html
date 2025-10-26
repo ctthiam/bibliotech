@@ -1,0 +1,193 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div>
+      <h1>Bonjour, {{ currentUser?.prenom }} ! 👋</h1>
+      <p class="header-subtitle">Bienvenue dans votre espace personnel BiblioTech</p>
+    </div>
+    <a routerLink="/livres" class="btn btn-primary">
+      <span>📖</span>
+      Parcourir le catalogue
+    </a>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement de vos données...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="alert alert-error">
+    <span>⚠️</span>
+    {{ error }}
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && !error">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.emprunts_en_cours }}</div>
+          <div class="stat-label">Emprunts en cours</div>
+        </div>
+      </div>
+
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.quota_disponible }}</div>
+          <div class="stat-label">Emprunts disponibles</div>
+        </div>
+      </div>
+
+      <div class="stat-card" [ngClass]="stats.emprunts_en_retard > 0 ? 'red' : 'gray'">
+        <div class="stat-icon">⏰</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.emprunts_en_retard }}</div>
+          <div class="stat-label">Emprunts en retard</div>
+        </div>
+      </div>
+
+      <div class="stat-card" [ngClass]="stats.penalites_impayees > 0 ? 'orange' : 'gray'">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.penalites_impayees }} FCFA</div>
+          <div class="stat-label">Pénalités</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerte pénalités -->
+    <div *ngIf="stats.penalites_impayees > 0" class="alert alert-warning">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <strong>Pénalités impayées</strong>
+        <p>Vous avez {{ stats.penalites_impayees }} FCFA de pénalités à régler. Veuillez contacter la bibliothèque.</p>
+      </div>
+    </div>
+
+    <!-- Mes emprunts en cours -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Mes emprunts en cours</h2>
+        <a routerLink="/mes-emprunts" class="link">Voir tout →</a>
+      </div>
+
+      <div *ngIf="empruntsEnCours.length === 0" class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h3>Aucun emprunt en cours</h3>
+        <p>Parcourez notre catalogue et empruntez votre premier livre !</p>
+        <a routerLink="/livres" class="btn btn-primary">
+          Explorer le catalogue
+        </a>
+      </div>
+
+      <div *ngIf="empruntsEnCours.length > 0" class="emprunts-grid">
+        <div *ngFor="let emprunt of empruntsEnCours" class="emprunt-card">
+          <div class="book-cover" 
+               [style.background]="emprunt.livre.image_couverture ? 'url(' + emprunt.livre.image_couverture + ')' : getDefaultCover(emprunt.livre.titre)">
+            <span *ngIf="!emprunt.livre.image_couverture" class="book-placeholder">📖</span>
+          </div>
+          
+          <div class="emprunt-details">
+            <h3 class="book-title">{{ emprunt.livre.titre }}</h3>
+            <p class="book-author">{{ emprunt.livre.auteur }}</p>
+            
+            <div class="emprunt-dates">
+              <div class="date-info">
+                <span class="date-label">Emprunté le :</span>
+                <span>{{ emprunt.date_emprunt }}</span>
+              </div>
+              <div class="date-info">
+                <span class="date-label">Retour prévu :</span>
+                <span>{{ emprunt.date_retour_prevue }}</span>
+              </div>
+            </div>
+
+            <!-- Statut -->
+            <div class="emprunt-status">
+              <span 
+                class="badge" 
+                [ngClass]="{
+                  'badge-success': !emprunt.est_en_retard && emprunt.jours_restants && emprunt.jours_restants > 3,
+                  'badge-warning': !emprunt.est_en_retard && emprunt.jours_restants && emprunt.jours_restants <= 3,
+                  'badge-error': emprunt.est_en_retard
+                }">
+                <span *ngIf="emprunt.est_en_retard">
+                  ⚠️ Retard de {{ emprunt.jours_de_retard }} jour(s)
+                </span>
+                <span *ngIf="!emprunt.est_en_retard && emprunt.jours_restants !== undefined">
+                  ✓ {{ emprunt.jours_restants }} jour(s) restant(s)
+                </span>
+              </span>
+            </div>
+
+            <!-- Actions -->
+            <div class="emprunt-actions">
+              <button 
+                *ngIf="emprunt.peut_etre_prolonge" 
+                class="btn btn-sm btn-outline"
+                (click)="prolongerEmprunt(emprunt)">
+                Prolonger ({{ 2 - emprunt.nombre_prolongations }} restant)
+              </button>
+              <span *ngIf="!emprunt.peut_etre_prolonge" class="text-muted">
+                Prolongation non disponible
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nouveaux livres -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Nouveautés</h2>
+        <a routerLink="/livres" class="link">Voir tout →</a>
+      </div>
+
+      <div class="books-grid">
+        <a 
+          *ngFor="let livre of nouveauxLivres" 
+          [routerLink]="['/livres', livre.id]"
+          class="book-card">
+          <div class="book-cover-small" 
+               [style.background]="livre.image_couverture ? 'url(' + livre.image_couverture + ')' : getDefaultCover(livre.titre)">
+            <span *ngIf="!livre.image_couverture" class="book-placeholder">📖</span>
+          </div>
+          <div class="book-info">
+            <h4>{{ livre.titre }}</h4>
+            <p class="book-author">{{ livre.auteur }}</p>
+            <span 
+              class="badge" 
+              [ngClass]="livre.est_disponible ? 'badge-success' : 'badge-error'">
+              {{ livre.est_disponible ? '✓ Disponible' : '✗ Indisponible' }}
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Conseils -->
+    <div class="tips-section">
+      <h3>💡 Le saviez-vous ?</h3>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <span class="tip-icon">📅</span>
+          <p>Vous pouvez prolonger vos emprunts jusqu'à 2 fois si le livre n'est pas réservé</p>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">🔔</span>
+          <p>Recevez des rappels automatiques 3 jours avant la date de retour</p>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">⭐</span>
+          <p>Les pénalités sont de 100 FCFA par jour de retard</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

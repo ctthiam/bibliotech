@@ -1,0 +1,402 @@
+<!-- ============================================
+     src/app/pages/admin/gestion-livres/gestion-livres.component.html
+     ============================================ -->
+<div class="gestion-container">
+  <!-- Header -->
+  <div class="gestion-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <span class="title-icon">📚</span>
+        Gestion du Catalogue
+      </h1>
+      <p class="page-subtitle">Gérez l'ensemble des livres de la bibliothèque</p>
+    </div>
+    <button (click)="ajouterLivre()" class="btn btn-primary btn-lg">
+      <span>➕</span>
+      Ajouter un livre
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">📖</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.total_livres }}</div>
+        <div class="stat-label">Total de livres</div>
+      </div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">✅</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.livres_disponibles }}</div>
+        <div class="stat-label">Livres disponibles</div>
+      </div>
+    </div>
+
+    <div class="stat-card orange">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">📤</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.livres_empruntes }}</div>
+        <div class="stat-label">Livres empruntés</div>
+      </div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">🏷️</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.categories_count }}</div>
+        <div class="stat-label">Catégories</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <!-- Barre de recherche -->
+      <div class="search-bar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (keyup.enter)="onSearch()"
+            placeholder="Rechercher par titre, auteur, ISBN..."
+            class="search-input"
+          />
+          <button 
+            *ngIf="searchTerm" 
+            (click)="searchTerm = ''; onSearch()" 
+            class="clear-search">
+            ✕
+          </button>
+        </div>
+        <button (click)="onSearch()" class="btn btn-primary search-btn">
+          Rechercher
+        </button>
+      </div>
+
+      <!-- Filtres avancés -->
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label class="filter-label">Catégorie</label>
+          <select 
+            [(ngModel)]="selectedCategorie" 
+            (change)="onFilterChange()" 
+            class="filter-select">
+            <option [value]="null">Toutes les catégories</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">
+              {{ cat.nom }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Disponibilité</label>
+          <select 
+            [(ngModel)]="selectedDisponibilite" 
+            (change)="onFilterChange()" 
+            class="filter-select">
+            <option value="tous">Tous</option>
+            <option value="disponibles">Disponibles uniquement</option>
+            <option value="empruntes">Empruntés uniquement</option>
+          </select>
+        </div>
+
+        <button 
+          *ngIf="hasActiveFilters" 
+          (click)="clearFilters()" 
+          class="btn btn-secondary clear-filters">
+          <span>🔄</span>
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre de résultats -->
+  <div class="results-bar">
+    <p class="results-text">
+      <strong>{{ total }}</strong> livre(s) trouvé(s)
+    </p>
+    <span *ngIf="hasActiveFilters" class="active-filters-badge">
+      Filtres actifs
+    </span>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-large"></div>
+    <p class="loading-text">Chargement des livres...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    <div>
+      <strong>Erreur</strong>
+      <p>{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Aucun résultat -->
+  <div *ngIf="!loading && !error && livres.length === 0" class="empty-state">
+    <div class="empty-icon">📚</div>
+    <h3>Aucun livre trouvé</h3>
+    <p *ngIf="hasActiveFilters">
+      Aucun livre ne correspond à vos critères de recherche.
+    </p>
+    <p *ngIf="!hasActiveFilters">
+      Le catalogue est vide. Commencez par ajouter des livres !
+    </p>
+    <button (click)="ajouterLivre()" class="btn btn-primary">
+      <span>➕</span>
+      Ajouter un livre
+    </button>
+  </div>
+
+  <!-- Table des livres -->
+  <div *ngIf="!loading && !error && livres.length > 0" class="table-container">
+    <table class="livres-table">
+      <thead>
+        <tr>
+          <th>Couverture</th>
+          <th>Titre</th>
+          <th>Auteur</th>
+          <th>Catégorie</th>
+          <th>ISBN</th>
+          <th>Année</th>
+          <th>Exemplaires</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let livre of livres" class="table-row">
+          <td>
+            <div 
+              class="table-cover" 
+              [style.background]="livre.image_couverture 
+                ? 'url(' + livre.image_couverture + ') center/cover' 
+                : getDefaultCover(livre.titre)">
+              <span *ngIf="!livre.image_couverture" class="cover-icon">📖</span>
+            </div>
+          </td>
+          <td>
+            <div class="livre-title-cell">
+              <strong>{{ livre.titre }}</strong>
+              <span *ngIf="livre.editeur" class="livre-subtitle">{{ livre.editeur }}</span>
+            </div>
+          </td>
+          <td>{{ livre.auteur }}</td>
+          <td>
+            <span class="categorie-badge">
+              {{ livre.categorie?.nom || 'Non classé' }}
+            </span>
+          </td>
+          <td>
+            <code class="isbn-code">{{ livre.isbn || 'N/A' }}</code>
+          </td>
+          <td>{{ livre.annee_publication || 'N/A' }}</td>
+          <td>
+            <div class="exemplaires-cell">
+              <span class="exemplaires-value">
+                {{ livre.exemplaires_disponibles || 0 }} / {{ livre.nombre_exemplaires || 0 }}
+              </span>
+            </div>
+          </td>
+          <td>
+            <span 
+              class="statut-badge" 
+              [ngClass]="livre.est_disponible ? 'disponible' : 'indisponible'">
+              <span class="badge-dot"></span>
+              {{ livre.est_disponible ? 'Disponible' : 'Indisponible' }}
+            </span>
+          </td>
+          <td>
+            <div class="actions-cell">
+              <button 
+                (click)="voirDetails(livre)" 
+                class="action-btn view"
+                title="Voir détails">
+                <span>👁️</span>
+              </button>
+              <button 
+                (click)="modifierLivre(livre)" 
+                class="action-btn edit"
+                title="Modifier">
+                <span>✏️</span>
+              </button>
+              <button 
+                (click)="confirmerSuppression(livre)" 
+                class="action-btn delete"
+                title="Supprimer">
+                <span>🗑️</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div *ngIf="lastPage > 1" class="pagination">
+      <button 
+        (click)="changePage(currentPage - 1)" 
+        [disabled]="currentPage === 1"
+        class="pagination-btn">
+        ← Précédent
+      </button>
+
+      <div class="pagination-numbers">
+        <button 
+          *ngIf="currentPage > 3"
+          (click)="changePage(1)" 
+          class="pagination-number">
+          1
+        </button>
+        
+        <span *ngIf="currentPage > 3" class="pagination-dots">...</span>
+
+        <button 
+          *ngFor="let page of getPageNumbers()"
+          (click)="changePage(page)" 
+          [class.active]="page === currentPage"
+          class="pagination-number">
+          {{ page }}
+        </button>
+
+        <span *ngIf="currentPage < lastPage - 2" class="pagination-dots">...</span>
+
+        <button 
+          *ngIf="currentPage < lastPage - 2"
+          (click)="changePage(lastPage)" 
+          class="pagination-number">
+          {{ lastPage }}
+        </button>
+      </div>
+
+      <button 
+        (click)="changePage(currentPage + 1)" 
+        [disabled]="currentPage === lastPage"
+        class="pagination-btn">
+        Suivant →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détails / Suppression -->
+<div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Détails -->
+    <div *ngIf="modalMode === 'view' && selectedLivre" class="modal-body">
+      <div class="modal-header">
+        <h2>Détails du livre</h2>
+        <button (click)="closeModal()" class="modal-close">✕</button>
+      </div>
+
+      <div class="modal-details">
+        <div 
+          class="modal-cover" 
+          [style.background]="selectedLivre.image_couverture 
+            ? 'url(' + selectedLivre.image_couverture + ') center/cover' 
+            : getDefaultCover(selectedLivre.titre)">
+          <span *ngIf="!selectedLivre.image_couverture" class="modal-cover-icon">📖</span>
+        </div>
+
+        <div class="modal-info">
+          <h3>{{ selectedLivre.titre }}</h3>
+          <p class="modal-author">par {{ selectedLivre.auteur }}</p>
+
+          <div class="modal-meta">
+            <div class="meta-row">
+              <span class="meta-label">ISBN :</span>
+              <span class="meta-value">{{ selectedLivre.isbn || 'N/A' }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Éditeur :</span>
+              <span class="meta-value">{{ selectedLivre.editeur || 'N/A' }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Année :</span>
+              <span class="meta-value">{{ selectedLivre.annee_publication || 'N/A' }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Pages :</span>
+              <span class="meta-value">{{ selectedLivre.nombre_pages || 'N/A' }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Langue :</span>
+              <span class="meta-value">{{ selectedLivre.langue || 'Français' }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Catégorie :</span>
+              <span class="meta-value">{{ selectedLivre.categorie?.nom || 'Non classé' }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Exemplaires :</span>
+              <span class="meta-value">
+                {{ selectedLivre.exemplaires_disponibles }} / {{ selectedLivre.nombre_exemplaires }}
+              </span>
+            </div>
+          </div>
+
+          <div *ngIf="selectedLivre.resume" class="modal-resume">
+            <h4>Résumé</h4>
+            <p>{{ selectedLivre.resume }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">
+          Fermer
+        </button>
+        <button (click)="modifierLivre(selectedLivre); closeModal()" class="btn btn-primary">
+          <span>✏️</span>
+          Modifier
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Suppression -->
+    <div *ngIf="modalMode === 'delete' && selectedLivre" class="modal-body">
+      <div class="modal-header delete-header">
+        <h2>⚠️ Confirmer la suppression</h2>
+        <button (click)="closeModal()" class="modal-close">✕</button>
+      </div>
+
+      <div class="modal-delete-content">
+        <p>Êtes-vous sûr de vouloir supprimer ce livre ?</p>
+        <div class="delete-book-info">
+          <strong>{{ selectedLivre.titre }}</strong>
+          <span>par {{ selectedLivre.auteur }}</span>
+        </div>
+        <p class="delete-warning">
+          ⚠️ Cette action est irréversible et supprimera tous les exemplaires associés.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">
+          Annuler
+        </button>
+        <button (click)="supprimerLivre()" class="btn btn-danger">
+          <span>🗑️</span>
+          Supprimer définitivement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

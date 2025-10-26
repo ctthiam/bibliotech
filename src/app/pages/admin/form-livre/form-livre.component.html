@@ -1,0 +1,346 @@
+<!-- ============================================
+     src/app/pages/admin/form-livre/form-livre.component.html
+     ============================================ -->
+<div class="form-container">
+  <!-- Header -->
+  <div class="form-header">
+    <div class="header-content">
+      <a routerLink="/admin/livres" class="back-link">
+        <span class="back-arrow">←</span>
+        Retour à la liste
+      </a>
+      <h1 class="page-title">
+        <span class="title-icon">{{ isEditMode ? '✏️' : '➕' }}</span>
+        {{ isEditMode ? 'Modifier un livre' : 'Ajouter un livre' }}
+      </h1>
+      <p class="page-subtitle">
+        {{ isEditMode ? 'Modifiez les informations du livre' : 'Complétez les informations pour ajouter un nouveau livre au catalogue' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-large"></div>
+    <p class="loading-text">Chargement du livre...</p>
+  </div>
+
+  <!-- Formulaire -->
+  <div *ngIf="!loading" class="form-content">
+    <form [formGroup]="livreForm" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <!-- Colonne Gauche : Formulaire -->
+        <div class="form-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="section-icon">📝</span>
+              Informations principales
+            </h2>
+          </div>
+
+          <!-- Alerte erreur -->
+          <div *ngIf="error" class="alert alert-error">
+            <span class="alert-icon">⚠️</span>
+            <div>
+              <strong>Erreur</strong>
+              <p>{{ error }}</p>
+            </div>
+          </div>
+
+          <div class="form-fields">
+            <!-- Titre -->
+            <div class="form-group">
+              <label for="titre" class="form-label">
+                <span class="label-text">Titre du livre</span>
+                <span class="label-required">*</span>
+              </label>
+              <input
+                id="titre"
+                type="text"
+                formControlName="titre"
+                class="form-input"
+                [class.input-error]="titre?.invalid && titre?.touched"
+                placeholder="Ex: Le Petit Prince"
+              />
+              <span *ngIf="titre?.invalid && titre?.touched" class="error-message">
+                {{ getErrorMessage('titre') }}
+              </span>
+            </div>
+
+            <!-- Auteur -->
+            <div class="form-group">
+              <label for="auteur" class="form-label">
+                <span class="label-text">Auteur</span>
+                <span class="label-required">*</span>
+              </label>
+              <input
+                id="auteur"
+                type="text"
+                formControlName="auteur"
+                class="form-input"
+                [class.input-error]="auteur?.invalid && auteur?.touched"
+                placeholder="Ex: Antoine de Saint-Exupéry"
+              />
+              <span *ngIf="auteur?.invalid && auteur?.touched" class="error-message">
+                {{ getErrorMessage('auteur') }}
+              </span>
+            </div>
+
+            <!-- ISBN -->
+            <div class="form-group">
+              <label for="isbn" class="form-label">
+                <span class="label-text">ISBN</span>
+                <span class="label-required">*</span>
+              </label>
+              <input
+                id="isbn"
+                type="text"
+                formControlName="isbn"
+                class="form-input"
+                [class.input-error]="isbn?.invalid && isbn?.touched"
+                placeholder="Ex: 978-2-07-061275-8"
+              />
+              <span *ngIf="isbn?.invalid && isbn?.touched" class="error-message">
+                {{ getErrorMessage('isbn') }}
+              </span>
+              <span class="field-hint">Format : 10 à 17 caractères (chiffres et tirets)</span>
+            </div>
+
+            <!-- Éditeur -->
+            <div class="form-group">
+              <label for="editeur" class="form-label">
+                <span class="label-text">Éditeur</span>
+              </label>
+              <input
+                id="editeur"
+                type="text"
+                formControlName="editeur"
+                class="form-input"
+                placeholder="Ex: Gallimard"
+              />
+            </div>
+
+            <!-- Grille 2 colonnes -->
+            <div class="form-row">
+              <!-- Année de publication -->
+              <div class="form-group">
+                <label for="annee_publication" class="form-label">
+                  <span class="label-text">Année de publication</span>
+                </label>
+                <input
+                  id="annee_publication"
+                  type="number"
+                  formControlName="annee_publication"
+                  class="form-input"
+                  [class.input-error]="annee_publication?.invalid && annee_publication?.touched"
+                  placeholder="Ex: 2024"
+                  [min]="1000"
+                  [max]="currentYear"
+                />
+                <span *ngIf="annee_publication?.invalid && annee_publication?.touched" class="error-message">
+                  {{ getErrorMessage('annee_publication') }}
+                </span>
+              </div>
+
+              <!-- Nombre de pages -->
+              <div class="form-group">
+                <label for="nombre_pages" class="form-label">
+                  <span class="label-text">Nombre de pages</span>
+                </label>
+                <input
+                  id="nombre_pages"
+                  type="number"
+                  formControlName="nombre_pages"
+                  class="form-input"
+                  [class.input-error]="nombre_pages?.invalid && nombre_pages?.touched"
+                  placeholder="Ex: 250"
+                  min="1"
+                />
+                <span *ngIf="nombre_pages?.invalid && nombre_pages?.touched" class="error-message">
+                  {{ getErrorMessage('nombre_pages') }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Grille 2 colonnes -->
+            <div class="form-row">
+              <!-- Langue -->
+              <div class="form-group">
+                <label for="langue" class="form-label">
+                  <span class="label-text">Langue</span>
+                </label>
+                <select
+                  id="langue"
+                  formControlName="langue"
+                  class="form-select"
+                >
+                  <option value="Français">Français</option>
+                  <option value="Anglais">Anglais</option>
+                  <option value="Espagnol">Espagnol</option>
+                  <option value="Arabe">Arabe</option>
+                  <option value="Allemand">Allemand</option>
+                  <option value="Autre">Autre</option>
+                </select>
+              </div>
+
+              <!-- Catégorie -->
+              <div class="form-group">
+                <label for="categorie_id" class="form-label">
+                  <span class="label-text">Catégorie</span>
+                </label>
+                <select
+                  id="categorie_id"
+                  formControlName="categorie_id"
+                  class="form-select"
+                >
+                  <option [value]="null">Aucune catégorie</option>
+                  <option *ngFor="let cat of categories" [value]="cat.id">
+                    {{ cat.nom }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Nombre d'exemplaires -->
+            <div class="form-group">
+              <label for="nombre_exemplaires" class="form-label">
+                <span class="label-text">Nombre d'exemplaires</span>
+                <span class="label-required">*</span>
+              </label>
+              <input
+                id="nombre_exemplaires"
+                type="number"
+                formControlName="nombre_exemplaires"
+                class="form-input"
+                [class.input-error]="nombre_exemplaires?.invalid && nombre_exemplaires?.touched"
+                placeholder="Ex: 5"
+                min="1"
+                max="100"
+              />
+              <span *ngIf="nombre_exemplaires?.invalid && nombre_exemplaires?.touched" class="error-message">
+                {{ getErrorMessage('nombre_exemplaires') }}
+              </span>
+              <span class="field-hint">Nombre de copies physiques disponibles (1-100)</span>
+            </div>
+
+            <!-- Résumé -->
+            <div class="form-group">
+              <label for="resume" class="form-label">
+                <span class="label-text">Résumé</span>
+              </label>
+              <textarea
+                id="resume"
+                formControlName="resume"
+                class="form-textarea"
+                [class.input-error]="resume?.invalid && resume?.touched"
+                rows="6"
+                placeholder="Décrivez brièvement le contenu du livre..."
+              ></textarea>
+              <span *ngIf="resume?.invalid && resume?.touched" class="error-message">
+                {{ getErrorMessage('resume') }}
+              </span>
+              <span class="field-hint">{{ resume?.value?.length || 0 }} / 2000 caractères</span>
+            </div>
+
+            <!-- URL Image de couverture -->
+            <div class="form-group">
+              <label for="image_couverture" class="form-label">
+                <span class="label-text">URL de la couverture</span>
+              </label>
+              <input
+                id="image_couverture"
+                type="url"
+                formControlName="image_couverture"
+                class="form-input"
+                placeholder="https://exemple.com/couverture.jpg"
+                (input)="onImageUrlChange($event)"
+              />
+              <span class="field-hint">Copiez l'URL d'une image depuis Internet</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Colonne Droite : Prévisualisation -->
+        <div class="preview-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="section-icon">👁️</span>
+              Prévisualisation
+            </h2>
+          </div>
+
+          <div class="preview-card">
+            <!-- Couverture -->
+            <div 
+              class="preview-cover"
+              [style.background]="imagePreview 
+                ? 'url(' + imagePreview + ') center/cover' 
+                : getDefaultCover(titre?.value || 'Nouveau livre')">
+              <div *ngIf="!imagePreview" class="preview-placeholder">
+                <span class="placeholder-icon">📖</span>
+                <span class="placeholder-text">{{ titre?.value || 'Aperçu du livre' }}</span>
+              </div>
+            </div>
+
+            <!-- Informations -->
+            <div class="preview-info">
+              <h3 class="preview-title">{{ titre?.value || 'Titre du livre' }}</h3>
+              <p class="preview-author">{{ auteur?.value || 'Auteur' }}</p>
+
+              <div class="preview-meta">
+                <div *ngIf="categorie_id?.value" class="preview-badge">
+                  {{ categories.find(c => c.id === +categorie_id?.value)?.nom }}
+                </div>
+                <div *ngIf="annee_publication?.value" class="preview-year">
+                  📅 {{ annee_publication?.value }}
+                </div>
+                <div *ngIf="nombre_pages?.value" class="preview-pages">
+                  📖 {{ nombre_pages?.value }} pages
+                </div>
+              </div>
+
+              <div *ngIf="resume?.value" class="preview-resume">
+                <strong>Résumé :</strong>
+                <p>{{ resume?.value.substring(0, 150) }}{{ resume?.value.length > 150 ? '...' : '' }}</p>
+              </div>
+
+              <div class="preview-stock">
+                <span class="stock-icon">📚</span>
+                <span class="stock-text">{{ nombre_exemplaires?.value || 0 }} exemplaire(s)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aide -->
+          <div class="help-card">
+            <h4 class="help-title">
+              <span>💡</span>
+              Conseils
+            </h4>
+            <ul class="help-list">
+              <li>Vérifiez l'ISBN sur le livre physique ou en ligne</li>
+              <li>Ajoutez un résumé détaillé pour faciliter la recherche</li>
+              <li>Utilisez des URL d'images stables (évitez les liens temporaires)</li>
+              <li>Le nombre d'exemplaires peut être modifié ultérieurement</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" (click)="onCancel()" class="btn btn-secondary btn-lg" [disabled]="submitting">
+          <span>✕</span>
+          Annuler
+        </button>
+        <button type="submit" class="btn btn-primary btn-lg" [disabled]="submitting || livreForm.invalid">
+          <span *ngIf="!submitting">{{ isEditMode ? '💾 Enregistrer les modifications' : '➕ Ajouter le livre' }}</span>
+          <span *ngIf="submitting" class="loading-inline">
+            <span class="spinner-small"></span>
+            Enregistrement...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

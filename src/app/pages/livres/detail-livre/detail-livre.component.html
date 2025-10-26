@@ -1,0 +1,276 @@
+<!-- ============================================
+     src/app/pages/livres/detail-livre/detail-livre.component.html
+     ============================================ -->
+<div class="detail-container">
+  <!-- Bouton retour -->
+  <div class="back-button-container">
+    <button (click)="goBack()" class="back-button">
+      <span class="back-arrow">←</span>
+      Retour au catalogue
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-large"></div>
+    <p class="loading-text">Chargement du livre...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-icon">😞</div>
+    <h2>Oups !</h2>
+    <p>{{ error }}</p>
+    <button (click)="goBack()" class="btn btn-primary">
+      Retour au catalogue
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="livre && !loading && !error" class="detail-content">
+    <!-- Section principale -->
+    <div class="livre-main">
+      <!-- Couverture -->
+      <div class="livre-cover-section">
+        <div 
+          class="livre-cover-large" 
+          [style.background]="livre.image_couverture 
+            ? 'url(' + livre.image_couverture + ') center/cover' 
+            : getDefaultCover(livre.titre)">
+          <div *ngIf="!livre.image_couverture" class="cover-placeholder-large">
+            <span class="book-icon-large">📖</span>
+            <span class="book-title-cover">{{ livre.titre }}</span>
+          </div>
+        </div>
+
+        <!-- Badge disponibilité -->
+        <div class="disponibilite-badge" [ngClass]="disponibiliteClass">
+          <span class="badge-icon">
+            {{ livre.est_disponible ? '✓' : '✗' }}
+          </span>
+          <div class="badge-content">
+            <span class="badge-label">
+              {{ livre.est_disponible ? 'Disponible' : 'Indisponible' }}
+            </span>
+            <span class="badge-detail">{{ disponibiliteTexte }}</span>
+          </div>
+        </div>
+
+        <!-- Actions rapides -->
+        <div class="quick-actions">
+          <button (click)="shareBook()" class="action-btn" title="Partager">
+            <span>🔗</span>
+          </button>
+          <button class="action-btn" title="Ajouter aux favoris">
+            <span>❤️</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Informations -->
+      <div class="livre-info-section">
+        <!-- En-tête -->
+        <div class="livre-header">
+          <div>
+            <span *ngIf="livre.categorie" class="categorie-badge">
+              {{ livre.categorie.nom }}
+            </span>
+            <h1 class="livre-titre-main">{{ livre.titre }}</h1>
+            <p class="livre-auteur-main">par {{ livre.auteur }}</p>
+          </div>
+        </div>
+
+        <!-- Métadonnées -->
+        <div class="livre-meta-grid">
+          <div class="meta-card">
+            <span class="meta-icon">📅</span>
+            <div class="meta-info">
+              <span class="meta-label">Année</span>
+              <span class="meta-value">{{ livre.annee_publication || 'N/A' }}</span>
+            </div>
+          </div>
+
+          <div class="meta-card">
+            <span class="meta-icon">🏢</span>
+            <div class="meta-info">
+              <span class="meta-label">Éditeur</span>
+              <span class="meta-value">{{ livre.editeur || 'N/A' }}</span>
+            </div>
+          </div>
+
+          <div class="meta-card">
+            <span class="meta-icon">📖</span>
+            <div class="meta-info">
+              <span class="meta-label">Pages</span>
+              <span class="meta-value">{{ livre.nombre_pages || 'N/A' }}</span>
+            </div>
+          </div>
+
+          <div class="meta-card">
+            <span class="meta-icon">🌍</span>
+            <div class="meta-info">
+              <span class="meta-label">Langue</span>
+              <span class="meta-value">{{ livre.langue || 'Français' }}</span>
+            </div>
+          </div>
+
+          <div class="meta-card" *ngIf="livre.isbn">
+            <span class="meta-icon">🔢</span>
+            <div class="meta-info">
+              <span class="meta-label">ISBN</span>
+              <span class="meta-value">{{ livre.isbn }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions principales -->
+        <div class="main-actions">
+          <button 
+            *ngIf="livre.est_disponible"
+            (click)="emprunter()" 
+            [disabled]="empruntLoading"
+            class="btn btn-primary btn-lg btn-emprunter">
+            <span *ngIf="!empruntLoading">📚 Emprunter ce livre</span>
+            <span *ngIf="empruntLoading" class="loading-inline">
+              <span class="spinner-small"></span>
+              Traitement...
+            </span>
+          </button>
+
+          <button 
+            *ngIf="!livre.est_disponible"
+            (click)="reserver()" 
+            class="btn btn-outline btn-lg btn-reserver">
+            <span>🔔</span>
+            Réserver ce livre
+          </button>
+
+          <button *ngIf="!isAuthenticated" routerLink="/login" class="btn btn-primary btn-lg">
+            <span>🔐</span>
+            Se connecter pour emprunter
+          </button>
+        </div>
+
+        <!-- Onglets -->
+        <div class="tabs-container">
+          <div class="tabs-header">
+            <button 
+              [class.active]="currentTab === 'details'"
+              (click)="changeTab('details')"
+              class="tab-button">
+              📝 Détails
+            </button>
+            <button 
+              [class.active]="currentTab === 'exemplaires'"
+              (click)="changeTab('exemplaires')"
+              class="tab-button">
+              📚 Exemplaires ({{ livre.nombre_exemplaires || 0 }})
+            </button>
+            <button 
+              [class.active]="currentTab === 'avis'"
+              (click)="changeTab('avis')"
+              class="tab-button">
+              ⭐ Avis
+            </button>
+          </div>
+
+          <div class="tabs-content">
+            <!-- Onglet Détails -->
+            <div *ngIf="currentTab === 'details'" class="tab-panel">
+              <h3 class="section-title">Résumé</h3>
+              <p *ngIf="livre.resume" class="livre-resume">{{ livre.resume }}</p>
+              <p *ngIf="!livre.resume" class="text-muted">Aucun résumé disponible pour ce livre.</p>
+
+              <div class="info-block">
+                <h4 class="info-title">📌 Informations supplémentaires</h4>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">Catégorie :</span>
+                    <span class="info-value">{{ livre.categorie?.nom || 'Non classé' }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Date d'ajout :</span>
+                    <span class="info-value">{{ livre.created_at || 'N/A' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Onglet Exemplaires -->
+            <div *ngIf="currentTab === 'exemplaires'" class="tab-panel">
+              <h3 class="section-title">État des exemplaires</h3>
+              
+              <div class="exemplaires-stats">
+                <div class="stat-item available">
+                  <span class="stat-number">{{ livre.exemplaires_disponibles || 0 }}</span>
+                  <span class="stat-label">Disponible{{ (livre.exemplaires_disponibles || 0) > 1 ? 's' : '' }}</span>
+                </div>
+                <div class="stat-item borrowed">
+                  <span class="stat-number">
+                    {{ (livre.nombre_exemplaires || 0) - (livre.exemplaires_disponibles || 0) }}
+                  </span>
+                  <span class="stat-label">Emprunté{{ ((livre.nombre_exemplaires || 0) - (livre.exemplaires_disponibles || 0)) > 1 ? 's' : '' }}</span>
+                </div>
+                <div class="stat-item total">
+                  <span class="stat-number">{{ livre.nombre_exemplaires || 0 }}</span>
+                  <span class="stat-label">Total</span>
+                </div>
+              </div>
+
+              <div class="info-message">
+                <span class="info-icon">ℹ️</span>
+                <p>Les exemplaires sont disponibles au comptoir d'emprunt de la bibliothèque.</p>
+              </div>
+            </div>
+
+            <!-- Onglet Avis -->
+            <div *ngIf="currentTab === 'avis'" class="tab-panel">
+              <h3 class="section-title">Avis des lecteurs</h3>
+              
+              <div class="empty-reviews">
+                <span class="empty-icon">💭</span>
+                <p>Aucun avis pour le moment.</p>
+                <p class="text-muted">Soyez le premier à donner votre avis sur ce livre !</p>
+                <button class="btn btn-outline" disabled>
+                  Fonctionnalité bientôt disponible
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section livres similaires -->
+    <div *ngIf="livresSimilaires.length > 0" class="similar-section">
+      <h2 class="similar-title">
+        <span class="title-icon">📚</span>
+        Livres similaires
+      </h2>
+      
+      <div class="similar-grid">
+        <a 
+          *ngFor="let similaire of livresSimilaires" 
+          [routerLink]="['/livres', similaire.id]"
+          class="similar-card">
+          <div 
+            class="similar-cover" 
+            [style.background]="similaire.image_couverture 
+              ? 'url(' + similaire.image_couverture + ') center/cover' 
+              : getDefaultCover(similaire.titre)">
+            <span *ngIf="!similaire.image_couverture" class="book-icon-similar">📖</span>
+          </div>
+          <div class="similar-info">
+            <h4 class="similar-titre">{{ similaire.titre }}</h4>
+            <p class="similar-auteur">{{ similaire.auteur }}</p>
+            <span 
+              class="badge badge-sm" 
+              [ngClass]="similaire.est_disponible ? 'badge-success' : 'badge-error'">
+              {{ similaire.est_disponible ? '✓ Disponible' : '✗ Indisponible' }}
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

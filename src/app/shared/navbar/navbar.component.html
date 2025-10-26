@@ -1,0 +1,145 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Logo -->
+    <a routerLink="/home" class="navbar-logo">
+      <span class="logo-icon">📚</span>
+      <span class="logo-text">BiblioTech</span>
+    </a>
+
+    <!-- Menu Desktop -->
+    <ul class="navbar-menu">
+      <li>
+        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          Accueil
+        </a>
+      </li>
+      <li>
+        <a routerLink="/livres" routerLinkActive="active">
+          Catalogue
+        </a>
+      </li>
+      <li *ngIf="currentUser">
+        <a routerLink="/dashboard" routerLinkActive="active">
+          Mon Espace
+        </a>
+      </li>
+      <li *ngIf="currentUser">
+        <a routerLink="/mes-emprunts" routerLinkActive="active">
+          Mes Emprunts
+        </a>
+      </li>
+    </ul>
+
+    <!-- Actions -->
+    <div class="navbar-actions">
+      <!-- Si non connecté -->
+      <div *ngIf="!currentUser" class="auth-buttons">
+        <a routerLink="/login" class="btn btn-outline btn-sm">
+          Connexion
+        </a>
+        <a routerLink="/register" class="btn btn-primary btn-sm">
+          Inscription
+        </a>
+      </div>
+
+      <!-- Si connecté -->
+      <div *ngIf="currentUser" class="user-menu">
+        <button class="user-button" (click)="toggleProfileMenu()">
+          <div class="user-avatar">{{ getUserInitials() }}</div>
+          <span class="user-name">{{ currentUser.prenom }}</span>
+          <span class="dropdown-icon">▼</span>
+        </button>
+
+        <!-- Menu déroulant profil -->
+        <div class="dropdown-menu" [class.show]="isProfileMenuOpen">
+          <div class="dropdown-header">
+            <div class="user-info">
+              <strong>{{ currentUser.prenom }} {{ currentUser.nom }}</strong>
+              <span class="user-email">{{ currentUser.email }}</span>
+              <span class="user-role" [class.role-lecteur]="authService.isLecteur()">
+                {{ currentUser.role }}
+              </span>
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a routerLink="/dashboard" class="dropdown-item" (click)="toggleProfileMenu()">
+            <span class="item-icon">🏠</span>
+            Tableau de bord
+          </a>
+          <a routerLink="/mes-emprunts" class="dropdown-item" (click)="toggleProfileMenu()">
+            <span class="item-icon">📚</span>
+            Mes emprunts
+          </a>
+          <a href="#" class="dropdown-item" (click)="toggleProfileMenu()">
+            <span class="item-icon">👤</span>
+            Mon profil
+          </a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item logout" (click)="logout()">
+            <span class="item-icon">🚪</span>
+            Déconnexion
+          </button>
+        </div>
+      </div>
+
+      <!-- Bouton menu mobile -->
+      <button class="mobile-menu-btn" (click)="toggleMenu()">
+        <span class="hamburger"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Menu Mobile -->
+  <div class="mobile-menu" [class.show]="isMenuOpen">
+    <ul class="mobile-nav-links">
+      <li>
+        <a routerLink="/home" (click)="toggleMenu()">
+          <span class="mobile-icon">🏠</span>
+          Accueil
+        </a>
+      </li>
+      <li>
+        <a routerLink="/livres" (click)="toggleMenu()">
+          <span class="mobile-icon">📖</span>
+          Catalogue
+        </a>
+      </li>
+      <li *ngIf="currentUser">
+        <a routerLink="/dashboard" (click)="toggleMenu()">
+          <span class="mobile-icon">📊</span>
+          Mon Espace
+        </a>
+      </li>
+      <li *ngIf="currentUser">
+        <a routerLink="/mes-emprunts" (click)="toggleMenu()">
+          <span class="mobile-icon">📚</span>
+          Mes Emprunts
+        </a>
+      </li>
+    </ul>
+
+    <div class="mobile-divider"></div>
+
+    <div *ngIf="!currentUser" class="mobile-auth">
+      <a routerLink="/login" class="btn btn-outline" style="width: 100%; margin-bottom: 0.5rem;" (click)="toggleMenu()">
+        Connexion
+      </a>
+      <a routerLink="/register" class="btn btn-primary" style="width: 100%;" (click)="toggleMenu()">
+        Inscription
+      </a>
+    </div>
+
+    <div *ngIf="currentUser" class="mobile-user-section">
+      <div class="mobile-user-info">
+        <div class="user-avatar large">{{ getUserInitials() }}</div>
+        <div>
+          <strong>{{ currentUser.prenom }} {{ currentUser.nom }}</strong>
+          <span class="user-email">{{ currentUser.email }}</span>
+        </div>
+      </div>
+      <button class="btn btn-danger" style="width: 100%; margin-top: 1rem;" (click)="logout()">
+        Déconnexion
+      </button>
+    </div>
+  </div>
+</nav>

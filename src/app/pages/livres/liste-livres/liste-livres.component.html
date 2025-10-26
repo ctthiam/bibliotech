@@ -1,0 +1,302 @@
+<!-- ============================================
+     src/app/pages/livres/liste-livres/liste-livres.component.html
+     ============================================ -->
+<div class="catalogue-container">
+  <!-- Hero Section -->
+  <div class="catalogue-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        <span class="gradient-text">Explorez Notre Catalogue</span>
+      </h1>
+      <p class="hero-subtitle">
+        Découvrez notre collection de livres soigneusement sélectionnés pour vous
+      </p>
+    </div>
+  </div>
+
+  <!-- Barre de recherche et filtres -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <!-- Barre de recherche principale -->
+      <div class="search-bar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (keyup.enter)="onSearch()"
+            placeholder="Rechercher par titre, auteur, ISBN..."
+            class="search-input"
+          />
+          <button 
+            *ngIf="searchTerm" 
+            (click)="searchTerm = ''; onSearch()" 
+            class="clear-search">
+            ✕
+          </button>
+        </div>
+        <button (click)="onSearch()" class="btn btn-primary search-btn">
+          Rechercher
+        </button>
+      </div>
+
+      <!-- Filtres avancés -->
+      <div class="filters-grid">
+        <!-- Filtre catégorie -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <span class="filter-icon">📚</span>
+            Catégorie
+          </label>
+          <select 
+            [(ngModel)]="selectedCategorie" 
+            (change)="onFilterChange()" 
+            class="filter-select">
+            <option [value]="null">Toutes les catégories</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">
+              {{ cat.nom }} 
+              <span *ngIf="cat.livres_count">({{ cat.livres_count }})</span>
+            </option>
+          </select>
+        </div>
+
+        <!-- Filtre disponibilité -->
+        <div class="filter-group">
+          <label class="filter-checkbox">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="disponibleOnly" 
+              (change)="onFilterChange()"
+              class="checkbox-input"
+            />
+            <span class="checkbox-label">
+              <span class="checkbox-icon">✓</span>
+              Disponibles uniquement
+            </span>
+          </label>
+        </div>
+
+        <!-- Bouton réinitialiser -->
+        <button 
+          *ngIf="hasActiveFilters" 
+          (click)="clearFilters()" 
+          class="btn btn-secondary clear-filters">
+          <span>🔄</span>
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre d'actions et résultats -->
+  <div class="results-bar">
+    <div class="results-info">
+      <p class="results-text">{{ resultText }}</p>
+      <span *ngIf="hasActiveFilters" class="active-filters-badge">
+        Filtres actifs
+      </span>
+    </div>
+    
+    <div class="view-controls">
+      <button 
+        (click)="toggleViewMode()" 
+        class="view-toggle"
+        [class.active]="viewMode === 'grid'">
+        <span>▦</span> Grille
+      </button>
+      <button 
+        (click)="toggleViewMode()" 
+        class="view-toggle"
+        [class.active]="viewMode === 'list'">
+        <span>☰</span> Liste
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-large"></div>
+    <p class="loading-text">Chargement des livres...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    <div>
+      <strong>Erreur</strong>
+      <p>{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Aucun résultat -->
+  <div *ngIf="!loading && !error && livres.length === 0" class="empty-state">
+    <div class="empty-icon">📚</div>
+    <h3>Aucun livre trouvé</h3>
+    <p *ngIf="hasActiveFilters">
+      Essayez de modifier vos critères de recherche
+    </p>
+    <p *ngIf="!hasActiveFilters">
+      Notre catalogue sera bientôt rempli de merveilleux livres !
+    </p>
+    <button *ngIf="hasActiveFilters" (click)="clearFilters()" class="btn btn-primary">
+      Voir tous les livres
+    </button>
+  </div>
+
+  <!-- Grille de livres -->
+  <div *ngIf="!loading && !error && livres.length > 0">
+    <!-- Vue Grille -->
+    <div *ngIf="viewMode === 'grid'" class="livres-grid">
+      <a 
+        *ngFor="let livre of livres" 
+        [routerLink]="['/livres', livre.id]"
+        class="livre-card">
+        <!-- Badge disponibilité -->
+        <div class="livre-badge">
+          <span 
+            class="badge" 
+            [ngClass]="livre.est_disponible ? 'badge-success' : 'badge-error'">
+            {{ livre.est_disponible ? '✓ Disponible' : '✗ Indisponible' }}
+          </span>
+        </div>
+
+        <!-- Couverture -->
+        <div 
+          class="livre-cover" 
+          [style.background]="livre.image_couverture 
+            ? 'url(' + livre.image_couverture + ') center/cover' 
+            : getDefaultCover(livre.titre)">
+          <div *ngIf="!livre.image_couverture" class="cover-placeholder">
+            <span class="book-icon">📖</span>
+            <span class="book-title-mini">{{ livre.titre.substring(0, 30) }}</span>
+          </div>
+        </div>
+
+        <!-- Informations -->
+        <div class="livre-info">
+          <h3 class="livre-titre">{{ livre.titre }}</h3>
+          <p class="livre-auteur">{{ livre.auteur }}</p>
+          
+          <div class="livre-meta">
+            <span *ngIf="livre.categorie" class="meta-item">
+              <span class="meta-icon">📂</span>
+              {{ livre.categorie.nom }}
+            </span>
+            <span *ngIf="livre.annee_publication" class="meta-item">
+              <span class="meta-icon">📅</span>
+              {{ livre.annee_publication }}
+            </span>
+          </div>
+
+          <div class="livre-footer">
+            <span class="exemplaires-info">
+              <span class="exemplaires-icon">📚</span>
+              {{ livre.exemplaires_disponibles || 0 }} / {{ livre.nombre_exemplaires || 0 }}
+            </span>
+            <span class="voir-details">Voir détails →</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Vue Liste -->
+    <div *ngIf="viewMode === 'list'" class="livres-list">
+      <a 
+        *ngFor="let livre of livres" 
+        [routerLink]="['/livres', livre.id]"
+        class="livre-list-item">
+        <!-- Couverture miniature -->
+        <div 
+          class="livre-cover-mini" 
+          [style.background]="livre.image_couverture 
+            ? 'url(' + livre.image_couverture + ') center/cover' 
+            : getDefaultCover(livre.titre)">
+          <span *ngIf="!livre.image_couverture" class="book-icon-mini">📖</span>
+        </div>
+
+        <!-- Informations principales -->
+        <div class="livre-list-content">
+          <div class="livre-list-header">
+            <h3 class="livre-titre">{{ livre.titre }}</h3>
+            <span 
+              class="badge" 
+              [ngClass]="livre.est_disponible ? 'badge-success' : 'badge-error'">
+              {{ livre.est_disponible ? '✓ Disponible' : '✗ Indisponible' }}
+            </span>
+          </div>
+
+          <p class="livre-auteur">par {{ livre.auteur }}</p>
+
+          <p *ngIf="livre.resume" class="livre-resume">
+            {{ livre.resume.substring(0, 200) }}{{ livre.resume.length > 200 ? '...' : '' }}
+          </p>
+
+          <div class="livre-list-meta">
+            <span *ngIf="livre.categorie" class="meta-tag">
+              {{ livre.categorie.nom }}
+            </span>
+            <span *ngIf="livre.annee_publication" class="meta-tag">
+              {{ livre.annee_publication }}
+            </span>
+            <span *ngIf="livre.isbn" class="meta-tag">
+              ISBN: {{ livre.isbn }}
+            </span>
+            <span class="meta-tag">
+              {{ livre.exemplaires_disponibles || 0 }} / {{ livre.nombre_exemplaires || 0 }} disponible(s)
+            </span>
+          </div>
+        </div>
+
+        <!-- Action -->
+        <div class="livre-list-action">
+          <span class="voir-details-arrow">→</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="lastPage > 1" class="pagination">
+      <button 
+        (click)="changePage(currentPage - 1)" 
+        [disabled]="currentPage === 1"
+        class="pagination-btn">
+        ← Précédent
+      </button>
+
+      <div class="pagination-numbers">
+        <button 
+          *ngIf="currentPage > 3"
+          (click)="changePage(1)" 
+          class="pagination-number">
+          1
+        </button>
+        
+        <span *ngIf="currentPage > 3" class="pagination-dots">...</span>
+
+        <button 
+          *ngFor="let page of getPageNumbers()"
+          (click)="changePage(page)" 
+          [class.active]="page === currentPage"
+          class="pagination-number">
+          {{ page }}
+        </button>
+
+        <span *ngIf="currentPage < lastPage - 2" class="pagination-dots">...</span>
+
+        <button 
+          *ngIf="currentPage < lastPage - 2"
+          (click)="changePage(lastPage)" 
+          class="pagination-number">
+          {{ lastPage }}
+        </button>
+      </div>
+
+      <button 
+        (click)="changePage(currentPage + 1)" 
+        [disabled]="currentPage === lastPage"
+        class="pagination-btn">
+        Suivant →
+      </button>
+    </div>
+  </div>
+</div>
