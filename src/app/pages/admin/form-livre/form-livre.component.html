@@ -289,7 +289,7 @@
 
               <div class="preview-meta">
                 <div *ngIf="categorie_id?.value" class="preview-badge">
-                  {{ categories.find(c => c.id === +categorie_id?.value)?.nom }}
+                  {{ getCategorieNom(categorie_id?.value) }}
                 </div>
                 <div *ngIf="annee_publication?.value" class="preview-year">
                   📅 {{ annee_publication?.value }}
@@ -301,7 +301,7 @@
 
               <div *ngIf="resume?.value" class="preview-resume">
                 <strong>Résumé :</strong>
-                <p>{{ resume?.value.substring(0, 150) }}{{ resume?.value.length > 150 ? '...' : '' }}</p>
+                <p>{{ resume?.value?.substring(0, 150) }}{{ (resume?.value?.length || 0) > 150 ? '...' : '' }}</p>
               </div>
 
               <div class="preview-stock">

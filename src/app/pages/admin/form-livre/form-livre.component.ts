@@ -237,4 +237,10 @@ export class FormLivreComponent implements OnInit {
     const index = titre.length % colors.length;
     return colors[index];
   }
+
+  getCategorieNom(categorieId: number | null): string {
+    if (!categorieId) return '';
+    const categorie = this.categories.find(c => c.id === categorieId);
+    return categorie ? categorie.nom : '';
+  }
 }
