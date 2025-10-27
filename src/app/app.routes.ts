@@ -60,6 +60,11 @@ export const routes: Routes = [
     path: 'admin/dashboard',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/admin/dashboard/dashboard.component').then(m => m.DashboardComponent)
+  },
+  {
+    path: 'admin/emprunts',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/admin/gestion-emprunts/gestion-emprunts.component').then(m => m.GestionEmpruntsComponent)
   }
 
 ];
