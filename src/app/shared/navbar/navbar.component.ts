@@ -16,44 +16,89 @@ import { User } from '../../core/models/user';
 })
 export class NavbarComponent implements OnInit {
   currentUser: User | null = null;
-  isMenuOpen = false;
-  isProfileMenuOpen = false;
+  isAuthenticated = false;
+  mobileMenuOpen = false;
+  userMenuOpen = false;
+  adminMenuOpen = false;
 
   constructor(
-    public authService: AuthService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit() {
+    // S'abonner aux changements d'utilisateur
     this.authService.currentUser.subscribe(user => {
       this.currentUser = user;
+      this.isAuthenticated = !!user;
     });
   }
 
-  toggleMenu() {
-    this.isMenuOpen = !this.isMenuOpen;
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+    // Fermer les autres menus
+    this.userMenuOpen = false;
+    this.adminMenuOpen = false;
   }
 
-  toggleProfileMenu() {
-    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+  toggleUserMenu() {
+    this.userMenuOpen = !this.userMenuOpen;
+    this.adminMenuOpen = false;
+  }
+
+  toggleAdminMenu() {
+    this.adminMenuOpen = !this.adminMenuOpen;
+    this.userMenuOpen = false;
+  }
+
+  closeAllMenus() {
+    this.mobileMenuOpen = false;
+    this.userMenuOpen = false;
+    this.adminMenuOpen = false;
   }
 
   logout() {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/login']);
-      },
-      error: (error) => {
-        console.error('Erreur lors de la déconnexion:', error);
-        // Même en cas d'erreur, on déconnecte localement
-        this.router.navigate(['/login']);
-      }
-    });
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+      this.authService.logout();
+      this.closeAllMenus();
+      this.router.navigate(['/login']);
+    }
   }
 
-  getUserInitials(): string {
+  // Vérifier les rôles
+  get isLecteur(): boolean {
+    return this.currentUser?.role === 'lecteur';
+  }
+
+  get isBibliothecaire(): boolean {
+    return this.currentUser?.role === 'bibliothecaire';
+  }
+
+  get isAdministrateur(): boolean {
+    return this.currentUser?.role === 'administrateur';
+  }
+
+  get isStaff(): boolean {
+    return this.isBibliothecaire || this.isAdministrateur;
+  }
+
+  get userInitials(): string {
     if (!this.currentUser) return '';
-    const initials = `${this.currentUser.nom?.charAt(0) || ''}${this.currentUser.prenom?.charAt(0) || ''}`;
-    return initials.toUpperCase();
+    const prenom = this.currentUser.prenom?.[0] || '';
+    const nom = this.currentUser.nom?.[0] || '';
+    return (prenom + nom).toUpperCase();
+  }
+
+  get userRoleLabel(): string {
+    if (this.isAdministrateur) return 'Administrateur';
+    if (this.isBibliothecaire) return 'Bibliothécaire';
+    if (this.isLecteur) return 'Lecteur';
+    return 'Utilisateur';
+  }
+
+  get userRoleColor(): string {
+    if (this.isAdministrateur) return 'admin';
+    if (this.isBibliothecaire) return 'staff';
+    return 'lecteur';
   }
 }

@@ -1,0 +1,414 @@
+<!-- ============================================
+     src/app/pages/admin/gestion-emprunts/gestion-emprunts.component.html
+     ============================================ -->
+<div class="gestion-container">
+  <!-- Header -->
+  <div class="gestion-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <span class="title-icon">📋</span>
+        Gestion des Emprunts
+      </h1>
+      <p class="page-subtitle">Gérez tous les emprunts de la bibliothèque</p>
+    </div>
+    <button (click)="loadEmprunts()" class="btn btn-secondary">
+      <span>🔄</span>
+      Actualiser
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">📚</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.total_emprunts }}</div>
+        <div class="stat-label">Total d'emprunts</div>
+      </div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">📖</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.en_cours }}</div>
+        <div class="stat-label">En cours</div>
+      </div>
+    </div>
+
+    <div class="stat-card" [ngClass]="stats.en_retard > 0 ? 'red' : 'gray'">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">⏰</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.en_retard }}</div>
+        <div class="stat-label">En retard</div>
+      </div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">✅</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.termines }}</div>
+        <div class="stat-label">Terminés</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <!-- Barre de recherche -->
+      <div class="search-bar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Rechercher par livre, auteur ou lecteur..."
+            class="search-input"
+          />
+          <button 
+            *ngIf="searchTerm" 
+            (click)="searchTerm = ''" 
+            class="clear-search">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtres avancés -->
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label class="filter-label">Statut</label>
+          <select 
+            [(ngModel)]="selectedStatut" 
+            (change)="onFilterChange()" 
+            class="filter-select">
+            <option value="tous">Tous les emprunts</option>
+            <option value="en_cours">En cours</option>
+            <option value="termine">Terminés</option>
+            <option value="en_retard">En retard</option>
+          </select>
+        </div>
+
+        <button 
+          *ngIf="hasActiveFilters" 
+          (click)="clearFilters()" 
+          class="btn btn-secondary clear-filters">
+          <span>🔄</span>
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre de résultats -->
+  <div class="results-bar">
+    <p class="results-text">
+      <strong>{{ total }}</strong> emprunt(s) trouvé(s)
+    </p>
+    <span *ngIf="hasActiveFilters" class="active-filters-badge">
+      Filtres actifs
+    </span>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-large"></div>
+    <p class="loading-text">Chargement des emprunts...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    <div>
+      <strong>Erreur</strong>
+      <p>{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Aucun résultat -->
+  <div *ngIf="!loading && !error && filteredEmprunts.length === 0" class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>Aucun emprunt trouvé</h3>
+    <p *ngIf="hasActiveFilters || searchTerm">
+      Aucun emprunt ne correspond à vos critères de recherche.
+    </p>
+    <p *ngIf="!hasActiveFilters && !searchTerm">
+      Aucun emprunt n'a été enregistré pour le moment.
+    </p>
+  </div>
+
+  <!-- Table des emprunts -->
+  <div *ngIf="!loading && !error && filteredEmprunts.length > 0" class="table-container">
+    <table class="emprunts-table">
+      <thead>
+        <tr>
+          <th>Livre</th>
+          <th>Lecteur</th>
+          <th>Date emprunt</th>
+          <th>Retour prévu</th>
+          <th>Retour effectif</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emprunt of filteredEmprunts" class="table-row">
+          <td>
+            <div class="livre-cell">
+              <div 
+                class="table-cover" 
+                [style.background]="emprunt.livre.image_couverture 
+                  ? 'url(' + emprunt.livre.image_couverture + ') center/cover' 
+                  : getDefaultCover(emprunt.livre.titre)">
+                <span *ngIf="!emprunt.livre.image_couverture" class="cover-icon">📖</span>
+              </div>
+              <div class="livre-info">
+                <strong>{{ emprunt.livre.titre }}</strong>
+                <span class="livre-author">{{ emprunt.livre.auteur }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="lecteur-cell">
+              <div class="lecteur-avatar">
+                <span>{{ emprunt.lecteur?.prenom?.[0] }}{{ emprunt.lecteur?.nom?.[0] }}</span>
+              </div>
+              <div class="lecteur-info">
+                <strong>{{ emprunt.lecteur?.prenom }} {{ emprunt.lecteur?.nom }}</strong>
+                <span class="lecteur-carte">{{ emprunt.lecteur?.numero_carte }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="date-cell">
+              <span class="date-icon">📅</span>
+              <span>{{ emprunt.date_emprunt }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="date-cell" [class.warning]="emprunt.est_en_retard">
+              <span class="date-icon">{{ emprunt.est_en_retard ? '⚠️' : '📆' }}</span>
+              <span>{{ emprunt.date_retour_prevue }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="date-cell" *ngIf="emprunt.date_retour_effective">
+              <span class="date-icon">✅</span>
+              <span>{{ emprunt.date_retour_effective }}</span>
+            </div>
+            <span *ngIf="!emprunt.date_retour_effective" class="text-muted">-</span>
+          </td>
+          <td>
+            <span 
+              class="statut-badge" 
+              [ngClass]="getStatutClass(emprunt)">
+              <span class="badge-dot"></span>
+              {{ getStatutLabel(emprunt) }}
+            </span>
+          </td>
+          <td>
+            <div class="actions-cell">
+              <button 
+                (click)="voirDetails(emprunt)" 
+                class="action-btn view"
+                title="Voir détails">
+                <span>👁️</span>
+              </button>
+              <button 
+                *ngIf="emprunt.statut === 'en_cours'"
+                (click)="confirmerRetour(emprunt)" 
+                class="action-btn success"
+                title="Valider retour">
+                <span>✅</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div *ngIf="lastPage > 1" class="pagination">
+      <button 
+        (click)="changePage(currentPage - 1)" 
+        [disabled]="currentPage === 1"
+        class="pagination-btn">
+        ← Précédent
+      </button>
+
+      <div class="pagination-numbers">
+        <button 
+          *ngIf="currentPage > 3"
+          (click)="changePage(1)" 
+          class="pagination-number">
+          1
+        </button>
+        
+        <span *ngIf="currentPage > 3" class="pagination-dots">...</span>
+
+        <button 
+          *ngFor="let page of getPageNumbers()"
+          (click)="changePage(page)" 
+          [class.active]="page === currentPage"
+          class="pagination-number">
+          {{ page }}
+        </button>
+
+        <span *ngIf="currentPage < lastPage - 2" class="pagination-dots">...</span>
+
+        <button 
+          *ngIf="currentPage < lastPage - 2"
+          (click)="changePage(lastPage)" 
+          class="pagination-number">
+          {{ lastPage }}
+        </button>
+      </div>
+
+      <button 
+        (click)="changePage(currentPage + 1)" 
+        [disabled]="currentPage === lastPage"
+        class="pagination-btn">
+        Suivant →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détails / Retour -->
+<div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Détails -->
+    <div *ngIf="modalMode === 'view' && selectedEmprunt" class="modal-body">
+      <div class="modal-header">
+        <h2>Détails de l'emprunt</h2>
+        <button (click)="closeModal()" class="modal-close">✕</button>
+      </div>
+
+      <div class="modal-details-grid">
+        <!-- Livre -->
+        <div class="modal-section">
+          <h3 class="modal-subtitle">
+            <span class="subtitle-icon">📚</span>
+            Livre
+          </h3>
+          <div class="modal-livre">
+            <div 
+              class="modal-cover"
+              [style.background]="selectedEmprunt.livre.image_couverture 
+                ? 'url(' + selectedEmprunt.livre.image_couverture + ') center/cover' 
+                : getDefaultCover(selectedEmprunt.livre.titre)">
+              <span *ngIf="!selectedEmprunt.livre.image_couverture" class="modal-cover-icon">📖</span>
+            </div>
+            <div class="modal-livre-info">
+              <strong>{{ selectedEmprunt.livre.titre }}</strong>
+              <span>{{ selectedEmprunt.livre.auteur }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lecteur -->
+        <div class="modal-section">
+          <h3 class="modal-subtitle">
+            <span class="subtitle-icon">👤</span>
+            Lecteur
+          </h3>
+          <div class="modal-lecteur">
+            <div class="modal-lecteur-avatar">
+              <span>{{ selectedEmprunt.lecteur?.prenom?.[0] }}{{ selectedEmprunt.lecteur?.nom?.[0] }}</span>
+            </div>
+            <div class="modal-lecteur-info">
+              <strong>{{ selectedEmprunt.lecteur?.prenom }} {{ selectedEmprunt.lecteur?.nom }}</strong>
+              <span>Carte N° {{ selectedEmprunt.lecteur?.numero_carte }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informations -->
+      <div class="modal-info-section">
+        <h3 class="modal-subtitle">
+          <span class="subtitle-icon">📋</span>
+          Informations de l'emprunt
+        </h3>
+        <div class="modal-info-grid">
+          <div class="info-item">
+            <span class="info-label">Date d'emprunt :</span>
+            <span class="info-value">{{ selectedEmprunt.date_emprunt }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Retour prévu :</span>
+            <span class="info-value" [class.warning]="selectedEmprunt.est_en_retard">
+              {{ selectedEmprunt.date_retour_prevue }}
+            </span>
+          </div>
+          <div class="info-item" *ngIf="selectedEmprunt.date_retour_effective">
+            <span class="info-label">Retour effectif :</span>
+            <span class="info-value">{{ selectedEmprunt.date_retour_effective }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Statut :</span>
+            <span 
+              class="statut-badge" 
+              [ngClass]="getStatutClass(selectedEmprunt)">
+              {{ getStatutLabel(selectedEmprunt) }}
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Prolongations :</span>
+            <span class="info-value">{{ selectedEmprunt.nombre_prolongations }}/2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">
+          Fermer
+        </button>
+        <button 
+          *ngIf="selectedEmprunt.statut === 'en_cours'"
+          (click)="confirmerRetour(selectedEmprunt); closeModal()" 
+          class="btn btn-success">
+          <span>✅</span>
+          Valider le retour
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Retour -->
+    <div *ngIf="modalMode === 'retour' && selectedEmprunt" class="modal-body">
+      <div class="modal-header success-header">
+        <h2>✅ Valider le retour</h2>
+        <button (click)="closeModal()" class="modal-close">✕</button>
+      </div>
+
+      <div class="modal-retour-content">
+        <p>Confirmez-vous le retour de ce livre ?</p>
+        <div class="retour-info">
+          <strong>{{ selectedEmprunt.livre.titre }}</strong>
+          <span>Emprunté par {{ selectedEmprunt.lecteur?.prenom }} {{ selectedEmprunt.lecteur?.nom }}</span>
+        </div>
+        <div *ngIf="selectedEmprunt.est_en_retard" class="retour-warning">
+          ⚠️ Retard de {{ selectedEmprunt.jours_de_retard }} jour(s). Une pénalité sera appliquée automatiquement.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">
+          Annuler
+        </button>
+        <button (click)="validerRetour()" class="btn btn-success">
+          <span>✅</span>
+          Confirmer le retour
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

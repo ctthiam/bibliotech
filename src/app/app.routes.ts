@@ -55,6 +55,11 @@ export const routes: Routes = [
     path: 'admin/livres/modifier/:id',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/admin/form-livre/form-livre.component').then(m => m.FormLivreComponent)
+  },
+  {
+    path: 'admin/dashboard',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/admin/dashboard/dashboard.component').then(m => m.DashboardComponent)
   }
 
 ];

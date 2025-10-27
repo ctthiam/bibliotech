@@ -1,0 +1,318 @@
+<!-- ============================================
+     src/app/pages/admin/dashboard/dashboard.component.html
+     ============================================ -->
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <span class="title-icon">📊</span>
+        <span class="title-text">
+          Dashboard Admin
+          <span class="title-badge" *ngIf="hasAlertes">{{ alertesCount }}</span>
+        </span>
+      </h1>
+      <p class="page-subtitle">
+        Bonjour {{ currentUser?.prenom }}, bienvenue dans votre espace d'administration
+      </p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/admin/livres/nouveau" class="btn btn-primary">
+        <span>➕</span>
+        Ajouter un livre
+      </a>
+      <button class="btn btn-secondary" (click)="loadDashboardData()">
+        <span>🔄</span>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-large"></div>
+    <p class="loading-text">Chargement du dashboard...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    <div>
+      <strong>Erreur</strong>
+      <p>{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && !error" class="dashboard-content">
+    <!-- Alertes -->
+    <div *ngIf="hasAlertes" class="alertes-section">
+      <div class="alerte-card warning" *ngIf="stats.emprunts_en_retard > 0">
+        <div class="alerte-icon">⚠️</div>
+        <div class="alerte-content">
+          <strong>{{ stats.emprunts_en_retard }} emprunt(s) en retard</strong>
+          <p>Certains livres n'ont pas été retournés à temps</p>
+        </div>
+        <a routerLink="/admin/emprunts" class="alerte-action">
+          Gérer →
+        </a>
+      </div>
+
+      <div class="alerte-card danger" *ngIf="stats.penalites_impayees > 0">
+        <div class="alerte-icon">💰</div>
+        <div class="alerte-content">
+          <strong>{{ stats.penalites_impayees }} FCFA de pénalités impayées</strong>
+          <p>Des lecteurs ont des pénalités à régler</p>
+        </div>
+        <a routerLink="/admin/penalites" class="alerte-action">
+          Voir →
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <!-- Total Livres -->
+      <div class="stat-card blue">
+        <div class="stat-header">
+          <div class="stat-icon-wrapper">
+            <span class="stat-icon">📚</span>
+          </div>
+          <div class="stat-trend up">
+            <span class="trend-icon">📈</span>
+            <span class="trend-value">+12%</span>
+          </div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ stats.total_livres }}</div>
+          <div class="stat-label">Total de livres</div>
+          <div class="stat-progress">
+            <div class="progress-bar">
+              <div class="progress-fill blue" [style.width.%]="100"></div>
+            </div>
+            <span class="progress-text">{{ stats.livres_disponibles }} disponibles</span>
+          </div>
+        </div>
+        <a routerLink="/admin/livres" class="stat-footer">
+          <span>Gérer le catalogue</span>
+          <span class="footer-arrow">→</span>
+        </a>
+      </div>
+
+      <!-- Emprunts en cours -->
+      <div class="stat-card green">
+        <div class="stat-header">
+          <div class="stat-icon-wrapper">
+            <span class="stat-icon">📖</span>
+          </div>
+          <div class="stat-trend" [class.up]="stats.emprunts_en_retard === 0" [class.down]="stats.emprunts_en_retard > 0">
+            <span class="trend-icon">{{ stats.emprunts_en_retard === 0 ? '✓' : '⚠️' }}</span>
+            <span class="trend-value">{{ pourcentageEmpruntsEnRetard }}% retard</span>
+          </div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ stats.emprunts_en_cours }}</div>
+          <div class="stat-label">Emprunts en cours</div>
+          <div class="stat-progress">
+            <div class="progress-bar">
+              <div class="progress-fill green" [style.width.%]="tauxOccupation"></div>
+            </div>
+            <span class="progress-text">{{ tauxOccupation }}% d'occupation</span>
+          </div>
+        </div>
+        <a routerLink="/admin/emprunts" class="stat-footer">
+          <span>Gérer les emprunts</span>
+          <span class="footer-arrow">→</span>
+        </a>
+      </div>
+
+      <!-- Utilisateurs -->
+      <div class="stat-card purple">
+        <div class="stat-header">
+          <div class="stat-icon-wrapper">
+            <span class="stat-icon">👥</span>
+          </div>
+          <div class="stat-trend up">
+            <span class="trend-icon">📈</span>
+            <span class="trend-value">+8%</span>
+          </div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ stats.total_utilisateurs }}</div>
+          <div class="stat-label">Utilisateurs inscrits</div>
+          <div class="stat-progress">
+            <div class="progress-bar">
+              <div class="progress-fill purple" [style.width.%]="75"></div>
+            </div>
+            <span class="progress-text">75% actifs ce mois</span>
+          </div>
+        </div>
+        <a routerLink="/admin/utilisateurs" class="stat-footer">
+          <span>Gérer les utilisateurs</span>
+          <span class="footer-arrow">→</span>
+        </a>
+      </div>
+
+      <!-- Pénalités -->
+      <div class="stat-card orange">
+        <div class="stat-header">
+          <div class="stat-icon-wrapper">
+            <span class="stat-icon">💰</span>
+          </div>
+          <div class="stat-trend" [class.down]="stats.penalites_impayees > 0">
+            <span class="trend-icon">{{ stats.penalites_impayees > 0 ? '⚠️' : '✓' }}</span>
+            <span class="trend-value">{{ stats.penalites_impayees > 0 ? 'À recouvrer' : 'OK' }}</span>
+          </div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ stats.penalites_impayees }} FCFA</div>
+          <div class="stat-label">Pénalités impayées</div>
+          <div class="stat-progress">
+            <div class="progress-bar">
+              <div class="progress-fill orange" [style.width.%]="stats.penalites_impayees > 0 ? 60 : 0"></div>
+            </div>
+            <span class="progress-text">{{ stats.emprunts_en_retard }} retards actifs</span>
+          </div>
+        </div>
+        <a routerLink="/admin/penalites" class="stat-footer">
+          <span>Gérer les pénalités</span>
+          <span class="footer-arrow">→</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Grille principale -->
+    <div class="main-grid">
+      <!-- Derniers emprunts -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon">📋</span>
+            <h2>Derniers Emprunts</h2>
+          </div>
+          <a routerLink="/admin/emprunts" class="section-link">Voir tout →</a>
+        </div>
+
+        <div *ngIf="derniersEmprunts.length === 0" class="empty-state-small">
+          <span class="empty-icon">📚</span>
+          <p>Aucun emprunt récent</p>
+        </div>
+
+        <div *ngIf="derniersEmprunts.length > 0" class="emprunts-list">
+          <div *ngFor="let emprunt of derniersEmprunts" class="emprunt-item">
+            <div 
+              class="emprunt-cover"
+              [style.background]="emprunt.livre.image_couverture 
+                ? 'url(' + emprunt.livre.image_couverture + ') center/cover' 
+                : getDefaultCover(emprunt.livre.titre)">
+              <span *ngIf="!emprunt.livre.image_couverture" class="cover-icon">📖</span>
+            </div>
+
+            <div class="emprunt-info">
+              <div class="emprunt-book">
+                <strong>{{ emprunt.livre.titre }}</strong>
+                <span class="emprunt-author">{{ emprunt.livre.auteur }}</span>
+              </div>
+              <div class="emprunt-lecteur">
+                <span class="lecteur-icon">👤</span>
+                <span>{{ emprunt.lecteur?.prenom }} {{ emprunt.lecteur?.nom }}</span>
+              </div>
+            </div>
+
+            <div class="emprunt-dates">
+              <div class="date-badge">
+                <span class="date-icon">📅</span>
+                <span>{{ emprunt.date_emprunt }}</span>
+              </div>
+              <div class="date-badge" [class.warning]="emprunt.est_en_retard">
+                <span class="date-icon">{{ emprunt.est_en_retard ? '⚠️' : '📆' }}</span>
+                <span>{{ emprunt.date_retour_prevue }}</span>
+              </div>
+            </div>
+
+            <div class="emprunt-statut">
+              <span 
+                class="statut-badge" 
+                [ngClass]="getStatutClass(emprunt)">
+                {{ getStatutLabel(emprunt) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Livres populaires -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon">⭐</span>
+            <h2>Livres Populaires</h2>
+          </div>
+          <a routerLink="/admin/livres" class="section-link">Voir tout →</a>
+        </div>
+
+        <div *ngIf="livresPopulaires.length === 0" class="empty-state-small">
+          <span class="empty-icon">📚</span>
+          <p>Aucune donnée disponible</p>
+        </div>
+
+        <div *ngIf="livresPopulaires.length > 0" class="livres-populaires">
+          <a 
+            *ngFor="let livre of livresPopulaires; let i = index" 
+            [routerLink]="['/livres', livre.id]"
+            class="livre-populaire">
+            <div class="livre-rank">{{ i + 1 }}</div>
+            <div 
+              class="livre-cover-small"
+              [style.background]="livre.image_couverture 
+                ? 'url(' + livre.image_couverture + ') center/cover' 
+                : getDefaultCover(livre.titre)">
+              <span *ngIf="!livre.image_couverture" class="cover-icon-small">📖</span>
+            </div>
+            <div class="livre-info-small">
+              <strong>{{ livre.titre }}</strong>
+              <span>{{ livre.auteur }}</span>
+            </div>
+            <div class="livre-badge">
+              <span class="badge-icon">📚</span>
+              <span>{{ livre.nombre_exemplaires || 0 }}</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+      <h2 class="actions-title">
+        <span class="actions-icon">⚡</span>
+        Actions Rapides
+      </h2>
+      <div class="actions-grid">
+        <a routerLink="/admin/livres/nouveau" class="action-card blue">
+          <span class="action-icon">➕</span>
+          <span class="action-title">Ajouter un livre</span>
+          <span class="action-subtitle">Enrichir le catalogue</span>
+        </a>
+
+        <a routerLink="/admin/emprunts" class="action-card green">
+          <span class="action-icon">✅</span>
+          <span class="action-title">Valider un retour</span>
+          <span class="action-subtitle">Gérer les emprunts</span>
+        </a>
+
+        <a routerLink="/admin/utilisateurs" class="action-card purple">
+          <span class="action-icon">👤</span>
+          <span class="action-title">Nouvel utilisateur</span>
+          <span class="action-subtitle">Créer un compte</span>
+        </a>
+
+        <a routerLink="/admin/statistiques" class="action-card orange">
+          <span class="action-icon">📈</span>
+          <span class="action-title">Voir statistiques</span>
+          <span class="action-subtitle">Rapports détaillés</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
