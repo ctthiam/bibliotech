@@ -1,0 +1,1495 @@
+/* ============================================
+   STATISTIQUES COMPONENT - DESIGN MODERNE
+   ============================================ */
+
+/* 1. CONTAINER PRINCIPAL */
+.stats-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding-bottom: 4rem;
+}
+
+/* 2. HERO SECTION */
+.stats-hero {
+  position: relative;
+  padding: 4rem 2rem 3rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.hero-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 20s infinite ease-in-out;
+}
+
+.circle-1 {
+  width: 300px;
+  height: 300px;
+  top: -100px;
+  right: -50px;
+  animation-delay: 0s;
+}
+
+.circle-2 {
+  width: 200px;
+  height: 200px;
+  bottom: -50px;
+  left: 10%;
+  animation-delay: 3s;
+}
+
+.circle-3 {
+  width: 150px;
+  height: 150px;
+  top: 50%;
+  left: -75px;
+  animation-delay: 6s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(180deg);
+  }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.title-icon {
+  font-size: 3rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.title-text {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+/* 3. LOADING */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 2rem;
+  gap: 1.5rem;
+}
+
+.spinner-large {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: white;
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+/* 4. CONTENT PRINCIPAL */
+.stats-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* 5. KPI CARDS GRID */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: -3rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  position: relative;
+  background: white;
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideUp 0.6s ease-out backwards;
+}
+
+.kpi-card:nth-child(1) { animation-delay: 0.1s; }
+.kpi-card:nth-child(2) { animation-delay: 0.2s; }
+.kpi-card:nth-child(3) { animation-delay: 0.3s; }
+.kpi-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kpi-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--kpi-color-1), var(--kpi-color-2));
+}
+
+.kpi-card.blue {
+  --kpi-color-1: #667eea;
+  --kpi-color-2: #764ba2;
+}
+
+.kpi-card.green {
+  --kpi-color-1: #43e97b;
+  --kpi-color-2: #38f9d7;
+}
+
+.kpi-card.purple {
+  --kpi-color-1: #f093fb;
+  --kpi-color-2: #f5576c;
+}
+
+.kpi-card.orange {
+  --kpi-color-1: #fa709a;
+  --kpi-color-2: #fee140;
+}
+
+.kpi-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.kpi-content {
+  position: relative;
+  z-index: 1;
+}
+
+.kpi-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--kpi-color-1), var(--kpi-color-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.75rem;
+  line-height: 1;
+}
+
+.kpi-trend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.kpi-trend.positive {
+  color: #22c55e;
+}
+
+.trend-icon {
+  font-size: 1.25rem;
+}
+
+.trend-text {
+  opacity: 0.9;
+}
+
+.kpi-glow {
+  position: absolute;
+  bottom: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, var(--kpi-color-1) 0%, transparent 70%);
+  opacity: 0.1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.kpi-progress {
+  margin-top: 1rem;
+}
+
+.progress-track {
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--kpi-color-1), var(--kpi-color-2));
+  border-radius: 999px;
+  transition: width 1s ease-out;
+  animation: progressFill 1.5s ease-out;
+}
+
+@keyframes progressFill {
+  from {
+    width: 0;
+  }
+}
+
+/* 6. CHARTS GRID */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.chart-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.chart-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--gray-100);
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chart-icon {
+  font-size: 1.5rem;
+}
+
+.chart-title h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin: 0;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-item.emprunts .legend-dot {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.legend-item.retours .legend-dot {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+}
+
+/* 7. BAR CHART */
+.bar-chart {
+  display: flex;
+  gap: 1rem;
+  height: 350px;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  min-width: 40px;
+}
+
+.y-label {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  font-weight: 600;
+  text-align: right;
+}
+
+.chart-bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-left: 2px solid var(--gray-200);
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bars-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.bar {
+  position: relative;
+  flex: 1;
+  max-width: 40px;
+  border-radius: 0.5rem 0.5rem 0 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  animation: barGrow 1s ease-out backwards;
+}
+
+@keyframes barGrow {
+  from {
+    height: 0 !important;
+    opacity: 0;
+  }
+}
+
+.bar:hover {
+  transform: scaleX(1.1);
+  filter: brightness(1.1);
+}
+
+.emprunts-bar {
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.retours-bar {
+  background: linear-gradient(180deg, #43e97b 0%, #38f9d7 100%);
+  box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+}
+
+.bar-value {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.bar:hover .bar-value {
+  opacity: 1;
+}
+
+.bar-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  text-align: center;
+}
+
+/* 8. DONUT CHART */
+.donut-chart-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.donut-chart {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  margin: 0 auto;
+}
+
+.donut-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.donut-track {
+  fill: none;
+  stroke: var(--gray-100);
+  stroke-width: 30;
+}
+
+.donut-segment {
+  fill: none;
+  stroke-width: 30;
+  stroke-linecap: round;
+  animation: donutDraw 1.5s ease-out backwards;
+}
+
+@keyframes donutDraw {
+  from {
+    stroke-dasharray: 0 503;
+  }
+}
+
+.donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.donut-total {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.donut-label {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.legend-row {
+  display: grid;
+  grid-template-columns: 16px 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background 0.2s ease;
+}
+
+.legend-row:hover {
+  background: var(--gray-50);
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.legend-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.legend-count {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  padding: 0.25rem 0.5rem;
+  background: var(--gray-100);
+  border-radius: 0.375rem;
+}
+
+.legend-percent {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* 9. TOP LIVRES */
+.top-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.top-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  animation: slideIn 0.5s ease-out backwards;
+}
+
+.top-item:nth-child(1) { animation-delay: 0.1s; }
+.top-item:nth-child(2) { animation-delay: 0.2s; }
+.top-item:nth-child(3) { animation-delay: 0.3s; }
+.top-item:nth-child(4) { animation-delay: 0.4s; }
+.top-item:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+.top-item:hover {
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transform: translateX(5px);
+}
+
+.top-rank {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.rank-1 {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #b8860b;
+}
+
+.rank-2 {
+  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+  color: #696969;
+}
+
+.rank-3 {
+  background: linear-gradient(135deg, #cd7f32, #e6a85c);
+  color: #8b4513;
+}
+
+.rank-4,
+.rank-5 {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.rank-number {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.top-info {
+  flex: 1;
+}
+
+.top-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 0.25rem;
+}
+
+.top-author {
+  font-size: 0.8125rem;
+  color: var(--gray-600);
+}
+
+.top-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.top-count {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--primary-600);
+  padding: 0.375rem 0.75rem;
+  background: var(--primary-50);
+  border-radius: 0.5rem;
+}
+
+.top-trend {
+  font-size: 1.25rem;
+}
+
+.trend-up {
+  color: #22c55e;
+}
+
+.trend-down {
+  color: #ef4444;
+}
+
+.trend-stable {
+  color: #6b7280;
+}
+
+/* 10. METRICS GRID */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.6s ease-out backwards;
+}
+
+.metric-card:nth-child(1) { animation-delay: 0.1s; }
+.metric-card:nth-child(2) { animation-delay: 0.2s; }
+.metric-card:nth-child(3) { animation-delay: 0.3s; }
+.metric-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.metric-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.metric-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  flex-shrink: 0;
+}
+
+.metric-icon.blue {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.metric-icon.green {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+}
+
+.metric-icon.purple {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+}
+
+.metric-icon.orange {
+  background: linear-gradient(135deg, #fa709a, #fee140);
+  box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
+}
+
+.metric-content {
+  flex: 1;
+}
+
+.metric-value {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--gray-800);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.metric-label {
+  font-size: 0.8125rem;
+  color: var(--gray-600);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.metric-bar {
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.metric-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1s ease-out;
+  animation: metricFill 1.5s ease-out;
+}
+
+@keyframes metricFill {
+  from {
+    width: 0;
+  }
+}
+
+.metric-fill.blue {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.metric-fill.green {
+  background: linear-gradient(90deg, #43e97b, #38f9d7);
+}
+
+.metric-fill.purple {
+  background: linear-gradient(90deg, #f093fb, #f5576c);
+}
+
+.metric-fill.orange {
+  background: linear-gradient(90deg, #fa709a, #fee140);
+}
+
+/* 11. ACTIONS SECTION */
+.actions-section {
+  background: white;
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.actions-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 1.5rem;
+}
+
+.actions-icon {
+  font-size: 1.5rem;
+}
+
+.actions-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.action-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.action-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.action-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.action-button:active {
+  transform: translateY(-2px);
+}
+
+.action-button.blue {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.action-button.green {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  color: white;
+}
+
+.action-button.purple {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+}
+
+.action-button.orange {
+  background: linear-gradient(135deg, #fa709a, #fee140);
+  color: white;
+}
+
+.button-icon {
+  font-size: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.button-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* 12. RESPONSIVE */
+@media (max-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .donut-chart-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .donut-chart {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-hero {
+    padding: 3rem 1.5rem 2rem;
+  }
+  
+  .title-text {
+    font-size: 1.75rem;
+  }
+  
+  .title-icon {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  
+  .stats-content {
+    padding: 0 1rem;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .kpi-card {
+    padding: 1.5rem;
+  }
+  
+  .kpi-value {
+    font-size: 2rem;
+  }
+  
+  .chart-card {
+    padding: 1.5rem;
+  }
+  
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .bar-chart {
+    height: 300px;
+  }
+  
+  .chart-bars {
+    gap: 0.5rem;
+  }
+  
+  .bar {
+    max-width: 30px;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .actions-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-icon {
+    font-size: 2.5rem;
+  }
+  
+  .kpi-value {
+    font-size: 1.75rem;
+  }
+  
+  .chart-title h2 {
+    font-size: 1.125rem;
+  }
+  
+  .bar-label {
+    font-size: 0.625rem;
+  }
+  
+  .top-rank {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .top-title {
+    font-size: 0.875rem;
+  }
+  
+  .top-author {
+    font-size: 0.75rem;
+  }
+  
+  .metric-value {
+    font-size: 1.5rem;
+  }
+  
+  .metric-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* 13. ANIMATIONS AVANCÉES */
+
+/* Animation des compteurs KPI */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kpi-value {
+  animation: countUp 0.8s ease-out;
+}
+
+/* Animation du glow effect */
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.2;
+    transform: scale(1.1);
+  }
+}
+
+.kpi-card:hover .kpi-glow {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* Animation hover des barres */
+.bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bar:hover::after {
+  opacity: 1;
+}
+
+/* Shimmer effect pour les cartes */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.kpi-card:hover::after {
+  opacity: 1;
+}
+
+/* Bounce effect pour les icônes */
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.chart-icon {
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+/* Rotation douce pour les segments du donut */
+.donut-segment {
+  transition: all 0.3s ease;
+}
+
+.donut-svg:hover .donut-segment {
+  stroke-width: 32;
+}
+
+/* Scale effect pour les légendes */
+.legend-row {
+  transform-origin: left center;
+}
+
+.legend-row:hover {
+  transform: scale(1.02);
+}
+
+/* Glow effect pour les boutons */
+.action-button {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-button:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.action-button.blue:hover {
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.action-button.green:hover {
+  box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
+}
+
+.action-button.purple:hover {
+  box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+}
+
+.action-button.orange:hover {
+  box-shadow: 0 8px 25px rgba(250, 112, 154, 0.4);
+}
+
+/* 14. DARK MODE SUPPORT (Optionnel) */
+@media (prefers-color-scheme: dark) {
+  .chart-card,
+  .metric-card,
+  .actions-section {
+    background: rgba(31, 41, 55, 0.8);
+    backdrop-filter: blur(10px);
+  }
+  
+  .kpi-card {
+    background: rgba(31, 41, 55, 0.9);
+  }
+  
+  .chart-title h2,
+  .metric-value,
+  .top-title,
+  .actions-title {
+    color: #f9fafb;
+  }
+  
+  .kpi-label,
+  .legend-item,
+  .metric-label,
+  .top-author,
+  .y-label,
+  .bar-label {
+    color: #d1d5db;
+  }
+  
+  .top-item {
+    background: rgba(55, 65, 81, 0.5);
+  }
+  
+  .top-item:hover {
+    background: rgba(55, 65, 81, 0.8);
+  }
+  
+  .legend-row:hover {
+    background: rgba(55, 65, 81, 0.3);
+  }
+}
+
+/* 15. PRINT STYLES */
+@media print {
+  .stats-container {
+    background: white;
+  }
+  
+  .hero-background {
+    display: none;
+  }
+  
+  .stats-hero {
+    background: white;
+    color: black;
+  }
+  
+  .title-text {
+    color: black;
+  }
+  
+  .actions-section {
+    display: none;
+  }
+  
+  .kpi-card,
+  .chart-card,
+  .metric-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
+  }
+  
+  .chart-card {
+    page-break-inside: avoid;
+  }
+}
+
+/* 16. ACCESSIBILITY */
+.kpi-card:focus-within,
+.chart-card:focus-within,
+.metric-card:focus-within,
+.action-button:focus {
+  outline: 3px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+.action-button:focus {
+  outline-color: rgba(102, 126, 234, 0.5);
+}
+
+/* Améliorer la lisibilité pour les utilisateurs avec vision réduite */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 17. EFFETS SUPPLÉMENTAIRES */
+
+/* Gradient animé pour le background du hero */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.stats-hero {
+  background: linear-gradient(
+    135deg,
+    #667eea,
+    #764ba2,
+    #f093fb,
+    #667eea
+  );
+  background-size: 300% 300%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Effet de brillance sur les valeurs KPI */
+@keyframes shine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.kpi-value {
+  background-size: 200% auto;
+  animation: shine 3s linear infinite;
+}
+
+/* Effet de pulsation pour les cercles du hero */
+.hero-circle {
+  animation: float 20s infinite ease-in-out, pulse 4s infinite ease-in-out;
+}
+
+/* Effet parallax léger sur les cartes */
+@media (hover: hover) and (pointer: fine) {
+  .kpi-card {
+    transform-style: preserve-3d;
+    transition: transform 0.4s ease;
+  }
+  
+  .kpi-card:hover {
+    transform: translateY(-8px) rotateX(2deg);
+  }
+}
+
+/* Effet de vague sur les barres de progression */
+@keyframes wave {
+  0%, 100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+}
+
+.progress-fill::after,
+.metric-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: wave 2s infinite;
+}
+
+/* Effet de zoom sur les icônes au hover */
+.kpi-icon,
+.metric-icon,
+.chart-icon {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kpi-card:hover .kpi-icon,
+.metric-card:hover .metric-icon {
+  transform: scale(1.15) rotate(5deg);
+}
+
+/* Effet de slide pour les éléments du top */
+.top-item {
+  border-left: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.top-item:hover {
+  border-left-color: var(--primary-500);
+  padding-left: 1.25rem;
+}
+
+/* Effet néon pour les valeurs importantes */
+.kpi-value,
+.metric-value {
+  position: relative;
+  filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.3));
+}
+
+/* Effet de particules (optionnel, peut être activé avec JS) */
+.kpi-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '✨';
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: 0;
+  animation: particle 3s infinite;
+  pointer-events: none;
+}
+
+@keyframes particle {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(100px, -100px) rotate(360deg);
+  }
+}
+
+/* État de chargement pour les graphiques */
+.chart-card.loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.chart-card.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}

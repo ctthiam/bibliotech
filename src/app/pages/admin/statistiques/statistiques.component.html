@@ -1,0 +1,274 @@
+<!-- ============================================
+     src/app/pages/admin/statistiques/statistiques.component.html
+     ============================================ -->
+<div class="stats-container">
+  <!-- Hero Header -->
+  <div class="stats-hero">
+    <div class="hero-background">
+      <div class="hero-circle circle-1"></div>
+      <div class="hero-circle circle-2"></div>
+      <div class="hero-circle circle-3"></div>
+    </div>
+    <div class="hero-content">
+      <h1 class="hero-title">
+        <span class="title-icon">📊</span>
+        <span class="title-text">Statistiques & Rapports</span>
+      </h1>
+      <p class="hero-subtitle">Analyse en temps réel des performances de votre bibliothèque</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-large"></div>
+    <p class="loading-text">Chargement des statistiques...</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading" class="stats-content">
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-icon">📚</div>
+        <div class="kpi-content">
+          <div class="kpi-label">Total Livres</div>
+          <div class="kpi-value">{{ stats.total_livres }}</div>
+          <div class="kpi-trend positive">
+            <span class="trend-icon">↗</span>
+            <span class="trend-text">+{{ stats.livres_populaires }} ce mois</span>
+          </div>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+
+      <div class="kpi-card green">
+        <div class="kpi-icon">📖</div>
+        <div class="kpi-content">
+          <div class="kpi-label">Total Emprunts</div>
+          <div class="kpi-value">{{ stats.total_emprunts }}</div>
+          <div class="kpi-trend positive">
+            <span class="trend-icon">↗</span>
+            <span class="trend-text">+{{ stats.croissance }}% vs mois dernier</span>
+          </div>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+
+      <div class="kpi-card purple">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-content">
+          <div class="kpi-label">Utilisateurs Actifs</div>
+          <div class="kpi-value">{{ stats.total_utilisateurs }}</div>
+          <div class="kpi-trend positive">
+            <span class="trend-icon">↗</span>
+            <span class="trend-text">+{{ stats.nouveaux_lecteurs }} nouveaux</span>
+          </div>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+
+      <div class="kpi-card orange">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-content">
+          <div class="kpi-label">Taux d'Occupation</div>
+          <div class="kpi-value">{{ stats.taux_occupation }}%</div>
+          <div class="kpi-progress">
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="stats.taux_occupation"></div>
+            </div>
+          </div>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid">
+      <!-- Bar Chart - Emprunts mensuels -->
+      <div class="chart-card full-width">
+        <div class="chart-header">
+          <div class="chart-title">
+            <span class="chart-icon">📊</span>
+            <h2>Évolution des Emprunts et Retours</h2>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item emprunts">
+              <span class="legend-dot"></span>
+              Emprunts
+            </span>
+            <span class="legend-item retours">
+              <span class="legend-dot"></span>
+              Retours
+            </span>
+          </div>
+        </div>
+        <div class="bar-chart">
+          <div class="chart-y-axis">
+            <span class="y-label">{{ getMaxValue() }}</span>
+            <span class="y-label">{{ (getMaxValue() * 0.75).toFixed(0) }}</span>
+            <span class="y-label">{{ (getMaxValue() * 0.5).toFixed(0) }}</span>
+            <span class="y-label">{{ (getMaxValue() * 0.25).toFixed(0) }}</span>
+            <span class="y-label">0</span>
+          </div>
+          <div class="chart-bars">
+            <div *ngFor="let data of monthlyData" class="bar-group">
+              <div class="bars-wrapper">
+                <div class="bar emprunts-bar" 
+                     [style.height.%]="getBarHeight(data.emprunts)"
+                     [attr.data-value]="data.emprunts">
+                  <span class="bar-value">{{ data.emprunts }}</span>
+                </div>
+                <div class="bar retours-bar" 
+                     [style.height.%]="getBarHeight(data.retours)"
+                     [attr.data-value]="data.retours">
+                  <span class="bar-value">{{ data.retours }}</span>
+                </div>
+              </div>
+              <span class="bar-label">{{ data.month }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Donut Chart - Catégories -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <span class="chart-icon">🎯</span>
+            <h2>Répartition par Catégories</h2>
+          </div>
+        </div>
+        <div class="donut-chart-container">
+          <div class="donut-chart">
+            <svg viewBox="0 0 200 200" class="donut-svg">
+              <circle cx="100" cy="100" r="80" class="donut-track"></circle>
+              <circle 
+                *ngFor="let cat of categoryData; let i = index"
+                cx="100" 
+                cy="100" 
+                r="80" 
+                class="donut-segment"
+                [style.stroke]="cat.color"
+                [attr.stroke-dasharray]="cat.percentage * 5.03 + ' ' + (100 - cat.percentage) * 5.03"
+                [attr.stroke-dashoffset]="getStrokeDashOffset(i)"
+                [style.animation-delay]="(i * 0.2) + 's'">
+              </circle>
+            </svg>
+            <div class="donut-center">
+              <div class="donut-total">{{ totalCategories }}</div>
+              <div class="donut-label">Livres</div>
+            </div>
+          </div>
+          <div class="donut-legend">
+            <div *ngFor="let cat of categoryData" class="legend-row">
+              <span class="legend-color" [style.background]="cat.color"></span>
+              <span class="legend-name">{{ cat.name }}</span>
+              <span class="legend-count">{{ cat.count }}</span>
+              <span class="legend-percent">{{ cat.percentage }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Livres -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <span class="chart-icon">⭐</span>
+            <h2>Top 5 Livres les Plus Empruntés</h2>
+          </div>
+        </div>
+        <div class="top-list">
+          <div *ngFor="let livre of topLivres; let i = index" class="top-item">
+            <div class="top-rank" [ngClass]="'rank-' + (i + 1)">
+              <span class="rank-number">{{ i + 1 }}</span>
+            </div>
+            <div class="top-info">
+              <div class="top-title">{{ livre.titre }}</div>
+              <div class="top-author">{{ livre.auteur }}</div>
+            </div>
+            <div class="top-stats">
+              <div class="top-count">{{ livre.emprunts }}</div>
+              <div class="top-trend" [ngClass]="getTrendClass(livre.trend)">
+                <span>{{ getTrendIcon(livre.trend) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Metrics -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon blue">⏱️</div>
+        <div class="metric-content">
+          <div class="metric-value">14.2</div>
+          <div class="metric-label">Durée Moyenne d'Emprunt (jours)</div>
+          <div class="metric-bar">
+            <div class="metric-fill blue" style="width: 71%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon green">✅</div>
+        <div class="metric-content">
+          <div class="metric-value">94%</div>
+          <div class="metric-label">Taux de Retour à Temps</div>
+          <div class="metric-bar">
+            <div class="metric-fill green" style="width: 94%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon purple">🔄</div>
+        <div class="metric-content">
+          <div class="metric-value">3.8</div>
+          <div class="metric-label">Rotation Moyenne par Livre</div>
+          <div class="metric-bar">
+            <div class="metric-fill purple" style="width: 76%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon orange">⭐</div>
+        <div class="metric-content">
+          <div class="metric-value">4.7/5</div>
+          <div class="metric-label">Satisfaction Lecteurs</div>
+          <div class="metric-bar">
+            <div class="metric-fill orange" style="width: 94%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="actions-section">
+      <h3 class="actions-title">
+        <span class="actions-icon">⚡</span>
+        Actions Rapides
+      </h3>
+      <div class="actions-buttons">
+        <button class="action-button blue">
+          <span class="button-icon">📥</span>
+          <span class="button-text">Exporter PDF</span>
+        </button>
+        <button class="action-button green">
+          <span class="button-icon">📊</span>
+          <span class="button-text">Exporter Excel</span>
+        </button>
+        <button class="action-button purple">
+          <span class="button-icon">📧</span>
+          <span class="button-text">Envoyer Rapport</span>
+        </button>
+        <button class="action-button orange" (click)="loadStatistiques()">
+          <span class="button-icon">🔄</span>
+          <span class="button-text">Actualiser</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

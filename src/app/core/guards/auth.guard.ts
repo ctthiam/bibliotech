@@ -1,8 +1,9 @@
+// src/app/core/guards/auth.guard.ts
 import { inject } from '@angular/core';
-import { Router, CanActivateFn } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const authGuard: CanActivateFn = (route, state) => {
+export const authGuard = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -10,6 +11,7 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+  // Si non connecté, rediriger vers login
+  router.navigate(['/login']);
   return false;
 };

@@ -2,31 +2,16 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'home',
-    pathMatch: 'full'
-  },
-  {
-    path: 'home',
-    loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'login',
-    loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent)
-  },
-  {
-    path: 'register',
-    loadComponent: () => import('./pages/auth/register/register.component').then(m => m.RegisterComponent)
-  },
-  {
-    path: 'livres',
-    loadComponent: () => import('./pages/livres/liste-livres/liste-livres.component').then(m => m.ListeLivresComponent)
-  },
-  {
-    path: 'livres/:id',
-    loadComponent: () => import('./pages/livres/detail-livre/detail-livre.component').then(m => m.DetailLivreComponent)
-  },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: 'home', loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent) },
+  { path: 'login', loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent) },
+  { path: 'register', loadComponent: () => import('./pages/auth/register/register.component').then(m => m.RegisterComponent) },
+  
+  // Routes publiques
+  { path: 'livres', loadComponent: () => import('./pages/livres/liste-livres/liste-livres.component').then(m => m.ListeLivresComponent) },
+  { path: 'livres/:id', loadComponent: () => import('./pages/livres/detail-livre/detail-livre.component').then(m => m.DetailLivreComponent) },
+  
+  // Routes protégées - Lecteur
   {
     path: 'dashboard',
     canActivate: [authGuard],
@@ -37,9 +22,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/lecteur/mes-emprunts/mes-emprunts.component').then(m => m.MesEmpruntsComponent)
   },
+  
+  // Routes protégées - Admin
   {
-    path: '**',
-    redirectTo: 'home'
+    path: 'admin/dashboard',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/admin/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
     path: 'admin/livres',
@@ -57,14 +45,21 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/admin/form-livre/form-livre.component').then(m => m.FormLivreComponent)
   },
   {
-    path: 'admin/dashboard',
-    canActivate: [authGuard],
-    loadComponent: () => import('./pages/admin/dashboard/dashboard.component').then(m => m.DashboardComponent)
-  },
-  {
     path: 'admin/emprunts',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/admin/gestion-emprunts/gestion-emprunts.component').then(m => m.GestionEmpruntsComponent)
-  }
-
+  },
+  {
+    path: 'admin/utilisateurs',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/admin/gestion-utilisateurs/gestion-utilisateurs.component').then(m => m.GestionUtilisateursComponent)
+  },
+  {
+    path: 'admin/statistiques',  // ✅ CORRIGÉ : Ajout du 'S' pour correspondre au navbar
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/admin/statistiques/statistiques.component').then(m => m.StatistiquesComponent)
+  },
+  
+  // Catch-all
+  { path: '**', redirectTo: 'home' }
 ];

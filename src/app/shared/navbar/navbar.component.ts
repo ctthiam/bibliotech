@@ -57,13 +57,22 @@ export class NavbarComponent implements OnInit {
     this.adminMenuOpen = false;
   }
 
-  logout() {
-    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      this.authService.logout();
-      this.closeAllMenus();
-      this.router.navigate(['/login']);
-    }
+logout() {
+  if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.closeAllMenus();
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la déconnexion:', error);
+        // Même en cas d'erreur, on déconnecte côté client
+        this.closeAllMenus();
+        this.router.navigate(['/login']);
+      }
+    });
   }
+}
 
   // Vérifier les rôles
   get isLecteur(): boolean {

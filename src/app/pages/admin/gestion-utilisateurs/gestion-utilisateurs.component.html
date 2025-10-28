@@ -1,0 +1,400 @@
+<!-- ============================================
+     src/app/pages/admin/gestion-utilisateurs/gestion-utilisateurs.component.html
+     ============================================ -->
+<div class="gestion-container">
+  <!-- Header -->
+  <div class="gestion-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <span class="title-icon">👥</span>
+        Gestion des Utilisateurs
+      </h1>
+      <p class="page-subtitle">Gérez tous les utilisateurs de la bibliothèque</p>
+    </div>
+    <button (click)="loadUtilisateurs()" class="btn btn-secondary">
+      <span>🔄</span>
+      Actualiser
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">👥</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.total_utilisateurs }}</div>
+        <div class="stat-label">Total d'utilisateurs</div>
+      </div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">📖</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.lecteurs }}</div>
+        <div class="stat-label">Lecteurs</div>
+      </div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">📚</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.bibliothecaires }}</div>
+        <div class="stat-label">Bibliothécaires</div>
+      </div>
+    </div>
+
+    <div class="stat-card orange">
+      <div class="stat-icon-wrapper">
+        <span class="stat-icon">👑</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.administrateurs }}</div>
+        <div class="stat-label">Administrateurs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <!-- Barre de recherche -->
+      <div class="search-bar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Rechercher par nom, email ou numéro de carte..."
+            class="search-input"
+          />
+          <button 
+            *ngIf="searchTerm" 
+            (click)="searchTerm = ''" 
+            class="clear-search">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtres avancés -->
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label class="filter-label">Rôle</label>
+          <select 
+            [(ngModel)]="selectedRole" 
+            (change)="onFilterChange()" 
+            class="filter-select">
+            <option value="tous">Tous les rôles</option>
+            <option value="lecteur">Lecteurs</option>
+            <option value="bibliothecaire">Bibliothécaires</option>
+            <option value="administrateur">Administrateurs</option>
+          </select>
+        </div>
+
+        <button 
+          *ngIf="hasActiveFilters" 
+          (click)="clearFilters()" 
+          class="btn btn-secondary clear-filters">
+          <span>🔄</span>
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre de résultats -->
+  <div class="results-bar">
+    <p class="results-text">
+      <strong>{{ filteredUsers.length }}</strong> utilisateur(s) trouvé(s)
+    </p>
+    <span *ngIf="hasActiveFilters" class="active-filters-badge">
+      Filtres actifs
+    </span>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-large"></div>
+    <p class="loading-text">Chargement des utilisateurs...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    <div>
+      <strong>Erreur</strong>
+      <p>{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Aucun résultat -->
+  <div *ngIf="!loading && !error && filteredUsers.length === 0" class="empty-state">
+    <div class="empty-icon">👥</div>
+    <h3>Aucun utilisateur trouvé</h3>
+    <p *ngIf="hasActiveFilters || searchTerm">
+      Aucun utilisateur ne correspond à vos critères de recherche.
+    </p>
+  </div>
+
+  <!-- Table des utilisateurs -->
+  <div *ngIf="!loading && !error && filteredUsers.length > 0" class="table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Date création</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers" class="table-row">
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar" [ngClass]="getRoleBadgeClass(user.role)">
+                <span>{{ getUserInitials(user) }}</span>
+              </div>
+              <div class="user-info">
+                <strong>{{ user.prenom }} {{ user.nom }}</strong>
+                <span *ngIf="user.lecteur" class="user-subtitle">
+                  Carte N° {{ user.lecteur.numero_carte }}
+                </span>
+                <span *ngIf="user.bibliothecaire" class="user-subtitle">
+                  Service: {{ user.bibliothecaire.service }}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="email-cell">
+              <span class="email-icon">📧</span>
+              <span>{{ user.email }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="phone-cell">
+              <span class="phone-icon">📱</span>
+              <span>{{ user.telephone }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
+              {{ getRoleLabel(user.role) }}
+            </span>
+          </td>
+          <td>
+            <button 
+              *ngIf="user.lecteur"
+              (click)="toggleStatut(user)"
+              class="statut-toggle" 
+              [ngClass]="getStatutClass(user.lecteur.statut)">
+              <span class="toggle-dot"></span>
+              {{ user.lecteur.statut }}
+            </button>
+            <span *ngIf="!user.lecteur" class="text-muted">-</span>
+          </td>
+          <td>
+            <div class="date-cell">
+              <span class="date-icon">📅</span>
+              <span>{{ user.date_creation }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="actions-cell">
+              <button 
+                (click)="voirDetails(user)" 
+                class="action-btn view"
+                title="Voir détails">
+                <span>👁️</span>
+              </button>
+              <button 
+                (click)="changerRole(user)" 
+                class="action-btn edit"
+                title="Changer rôle">
+                <span>🔄</span>
+              </button>
+              <button 
+                (click)="confirmerSuppression(user)" 
+                class="action-btn delete"
+                title="Supprimer">
+                <span>🗑️</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Détails -->
+    <div *ngIf="modalMode === 'view' && selectedUser" class="modal-body">
+      <div class="modal-header">
+        <h2>Détails de l'utilisateur</h2>
+        <button (click)="closeModal()" class="modal-close">✕</button>
+      </div>
+
+      <div class="modal-user-header">
+        <div class="modal-avatar" [ngClass]="getRoleBadgeClass(selectedUser.role)">
+          <span>{{ getUserInitials(selectedUser) }}</span>
+        </div>
+        <div class="modal-user-info">
+          <h3>{{ selectedUser.prenom }} {{ selectedUser.nom }}</h3>
+          <span class="role-badge" [ngClass]="getRoleBadgeClass(selectedUser.role)">
+            {{ getRoleLabel(selectedUser.role) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="modal-info-grid">
+        <div class="info-item">
+          <span class="info-label">Email :</span>
+          <span class="info-value">{{ selectedUser.email }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Téléphone :</span>
+          <span class="info-value">{{ selectedUser.telephone }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Date création :</span>
+          <span class="info-value">{{ selectedUser.date_creation }}</span>
+        </div>
+        <div class="info-item" *ngIf="selectedUser.lecteur">
+          <span class="info-label">N° Carte :</span>
+          <span class="info-value">{{ selectedUser.lecteur.numero_carte }}</span>
+        </div>
+        <div class="info-item" *ngIf="selectedUser.lecteur">
+          <span class="info-label">Quota emprunt :</span>
+          <span class="info-value">{{ selectedUser.lecteur.quota_emprunt }}</span>
+        </div>
+        <div class="info-item" *ngIf="selectedUser.lecteur">
+          <span class="info-label">Statut :</span>
+          <span class="statut-toggle" [ngClass]="getStatutClass(selectedUser.lecteur.statut)">
+            {{ selectedUser.lecteur.statut }}
+          </span>
+        </div>
+        <div class="info-item" *ngIf="selectedUser.bibliothecaire">
+          <span class="info-label">Service :</span>
+          <span class="info-value">{{ selectedUser.bibliothecaire.service }}</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">
+          Fermer
+        </button>
+        <button (click)="changerRole(selectedUser); closeModal()" class="btn btn-primary">
+          <span>🔄</span>
+          Changer le rôle
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Changement Rôle -->
+    <div *ngIf="modalMode === 'edit-role' && selectedUser" class="modal-body">
+      <div class="modal-header">
+        <h2>🔄 Changer le rôle</h2>
+        <button (click)="closeModal()" class="modal-close">✕</button>
+      </div>
+
+      <div class="modal-role-content">
+        <p>Modifier le rôle de <strong>{{ selectedUser.prenom }} {{ selectedUser.nom }}</strong></p>
+        
+        <div class="role-selector">
+          <label class="role-option">
+            <input 
+              type="radio" 
+              [(ngModel)]="newRole" 
+              value="lecteur"
+              name="role"
+            />
+            <div class="role-card lecteur">
+              <span class="role-icon">📖</span>
+              <span class="role-name">Lecteur</span>
+            </div>
+          </label>
+
+          <label class="role-option">
+            <input 
+              type="radio" 
+              [(ngModel)]="newRole" 
+              value="bibliothecaire"
+              name="role"
+            />
+            <div class="role-card staff">
+              <span class="role-icon">📚</span>
+              <span class="role-name">Bibliothécaire</span>
+            </div>
+          </label>
+
+          <label class="role-option">
+            <input 
+              type="radio" 
+              [(ngModel)]="newRole" 
+              value="administrateur"
+              name="role"
+            />
+            <div class="role-card admin">
+              <span class="role-icon">👑</span>
+              <span class="role-name">Administrateur</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">
+          Annuler
+        </button>
+        <button (click)="validerChangementRole()" class="btn btn-primary">
+          <span>✅</span>
+          Confirmer
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Suppression -->
+    <div *ngIf="modalMode === 'delete' && selectedUser" class="modal-body">
+      <div class="modal-header delete-header">
+        <h2>⚠️ Confirmer la suppression</h2>
+        <button (click)="closeModal()" class="modal-close">✕</button>
+      </div>
+
+      <div class="modal-delete-content">
+        <p>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</p>
+        <div class="delete-user-info">
+          <strong>{{ selectedUser.prenom }} {{ selectedUser.nom }}</strong>
+          <span>{{ selectedUser.email }}</span>
+          <span class="role-badge" [ngClass]="getRoleBadgeClass(selectedUser.role)">
+            {{ getRoleLabel(selectedUser.role) }}
+          </span>
+        </div>
+        <p class="delete-warning">
+          ⚠️ Cette action est irréversible. Toutes les données associées seront supprimées.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">
+          Annuler
+        </button>
+        <button (click)="supprimerUtilisateur()" class="btn btn-danger">
+          <span>🗑️</span>
+          Supprimer définitivement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
