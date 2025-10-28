@@ -59,7 +59,16 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/admin/statistiques/statistiques.component').then(m => m.StatistiquesComponent)
   },
-  
+  {
+    path: 'admin/categories',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/admin/gestion-categories/gestion-categories.component').then(m => m.GestionCategoriesComponent)
+  },
+  {
+    path: 'profil',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profil/profil.component').then(m => m.ProfilComponent)
+  },
   // Catch-all
   { path: '**', redirectTo: 'home' }
 ];

@@ -6,6 +6,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models/user';
+import { ApiResponse } from '../models/api-response';
 
 @Injectable({
   providedIn: 'root'
@@ -66,12 +67,27 @@ export class AuthService {
       );
   }
 
-  getProfile(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/auth/profile`);
+  getProfile(): Observable<AuthResponse> {
+    return this.http.get<AuthResponse>(`${this.apiUrl}/auth/profile`);
   }
 
-  updateProfile(data: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/auth/profile`, data);
+  // Mettre à jour le profil
+  updateProfile(data: any): Observable<AuthResponse> {
+    return this.http.put<AuthResponse>(`${this.apiUrl}/auth/profile`, data).pipe(
+      tap((response) => {
+        if (response.success && response.data?.user) {
+          // Mettre à jour l'utilisateur dans le BehaviorSubject
+          this.currentUserSubject.next(response.data.user);
+          // Mettre à jour dans le localStorage
+          localStorage.setItem('currentUser', JSON.stringify(response.data.user));
+        }
+      })
+    );
+  }
+
+  // Changer le mot de passe
+  changePassword(data: any): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.apiUrl}/auth/change-password`, data);
   }
 
   private saveAuthData(token: string, user: User): void {

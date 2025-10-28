@@ -13,6 +13,7 @@ import { ApiResponse, PaginatedResponse } from '../models/api-response';
 })
 export class LivreService {
   private apiUrl = `${environment.apiUrl}/livres`;
+  private categoriesUrl = `${environment.apiUrl}/categories`; // ✅ URL séparée
 
   constructor(private http: HttpClient) {}
 
@@ -60,7 +61,20 @@ export class LivreService {
     return this.http.get<ApiResponse<Livre[]>>(`${this.apiUrl}/nouveaux`);
   }
 
+  // ✅ MÉTHODES CATÉGORIES CORRIGÉES
   getCategories(): Observable<ApiResponse<Categorie[]>> {
-    return this.http.get<ApiResponse<Categorie[]>>(`${environment.apiUrl}/categories`);
+    return this.http.get<ApiResponse<Categorie[]>>(this.categoriesUrl);
+  }
+
+  createCategorie(data: any): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(this.categoriesUrl, data);
+  }
+
+  updateCategorie(id: number, data: any): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.categoriesUrl}/${id}`, data);
+  }
+
+  deleteCategorie(id: number): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.categoriesUrl}/${id}`);
   }
 }

@@ -25,6 +25,8 @@ export interface Categorie {
   nom: string;
   description?: string;
   livres_count?: number;
+  created_at?: string; // ⬅️ AJOUTEZ CETTE LIGNE
+  updated_at?: string; // ⬅️ BONUS : ajoutez aussi updated_at si nécessaire
 }
 
 export interface CreateLivreRequest {

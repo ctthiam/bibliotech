@@ -1,0 +1,268 @@
+<!-- ============================================
+     src/app/pages/admin/gestion-categories/gestion-categories.component.html
+     ============================================ -->
+<div class="categories-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">
+          <span class="title-icon">🏷️</span>
+          Gestion des Catégories
+        </h1>
+        <p class="page-subtitle">Organisez et gérez les catégories de livres</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <span class="btn-icon">➕</span>
+        Nouvelle Catégorie
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-icon">📚</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.total_categories }}</div>
+        <div class="stat-label">Catégories</div>
+      </div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon">📖</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.total_livres }}</div>
+        <div class="stat-label">Total Livres</div>
+      </div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.categorie_plus_populaire }}</div>
+        <div class="stat-label">Plus Populaire</div>
+      </div>
+    </div>
+
+    <div class="stat-card orange">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.moyenne_livres }}</div>
+        <div class="stat-label">Moyenne/Catégorie</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm"
+        placeholder="Rechercher une catégorie..."
+        class="search-input">
+    </div>
+
+    <div class="sort-controls">
+      <button 
+        class="sort-btn"
+        [class.active]="sortBy === 'nom'"
+        (click)="changeSortBy('nom')">
+        Nom
+        <span class="sort-arrow" *ngIf="sortBy === 'nom'">
+          {{ sortOrder === 'asc' ? '↑' : '↓' }}
+        </span>
+      </button>
+      <button 
+        class="sort-btn"
+        [class.active]="sortBy === 'livres_count'"
+        (click)="changeSortBy('livres_count')">
+        Livres
+        <span class="sort-arrow" *ngIf="sortBy === 'livres_count'">
+          {{ sortOrder === 'asc' ? '↑' : '↓' }}
+        </span>
+      </button>
+      <button 
+        class="sort-btn"
+        [class.active]="sortBy === 'created_at'"
+        (click)="changeSortBy('created_at')">
+        Date
+        <span class="sort-arrow" *ngIf="sortBy === 'created_at'">
+          {{ sortOrder === 'asc' ? '↑' : '↓' }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement des catégories...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-message">
+    <span class="error-icon">⚠️</span>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Categories Grid -->
+  <div *ngIf="!loading && !error" class="categories-grid">
+    <div 
+      *ngFor="let categorie of filteredCategories; let i = index" 
+      class="category-card"
+      [style.background]="getCategorieColor(i)">
+      
+      <div class="category-content">
+        <div class="category-header">
+          <h3 class="category-name">{{ categorie.nom }}</h3>
+          <span class="category-count">{{ categorie.livres_count || 0 }} livres</span>
+        </div>
+
+        <p class="category-description">
+          {{ categorie.description || 'Aucune description' }}
+        </p>
+
+        <div class="category-actions">
+          <button 
+            class="action-btn edit"
+            (click)="openEditModal(categorie)"
+            title="Modifier">
+            ✏️
+          </button>
+          <button 
+            class="action-btn delete"
+            (click)="openDeleteModal(categorie)"
+            title="Supprimer">
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <div class="category-decoration">
+        <div class="decoration-circle"></div>
+        <div class="decoration-circle"></div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredCategories.length === 0" class="empty-state">
+      <span class="empty-icon">🏷️</span>
+      <h3>Aucune catégorie trouvée</h3>
+      <p>Créez votre première catégorie pour organiser vos livres</p>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <span class="btn-icon">➕</span>
+        Créer une catégorie
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Create/Edit -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <span class="modal-icon">{{ modalMode === 'create' ? '➕' : '✏️' }}</span>
+          {{ modalMode === 'create' ? 'Nouvelle Catégorie' : 'Modifier la Catégorie' }}
+        </h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+
+      <form [formGroup]="categorieForm" (ngSubmit)="submitForm()">
+        <div class="modal-body">
+          <!-- Nom -->
+          <div class="form-group">
+            <label class="form-label">
+              Nom de la catégorie <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              formControlName="nom"
+              class="form-input"
+              [class.invalid]="isFieldInvalid('nom')"
+              placeholder="Ex: Romans, Sciences, Histoire...">
+            <span class="form-error" *ngIf="isFieldInvalid('nom')">
+              {{ getFieldError('nom') }}
+            </span>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea 
+              formControlName="description"
+              class="form-textarea"
+              [class.invalid]="isFieldInvalid('description')"
+              rows="4"
+              placeholder="Description de la catégorie..."></textarea>
+            <span class="form-hint">
+              {{ categorieForm.get('description')?.value?.length || 0 }}/500 caractères
+            </span>
+            <span class="form-error" *ngIf="isFieldInvalid('description')">
+              {{ getFieldError('description') }}
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            (click)="closeModal()"
+            [disabled]="submitting">
+            Annuler
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="submitting">
+            <span *ngIf="!submitting">
+              {{ modalMode === 'create' ? 'Créer' : 'Enregistrer' }}
+            </span>
+            <span *ngIf="submitting" class="spinner-inline"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Delete Confirmation -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <span class="modal-icon danger">⚠️</span>
+          Confirmer la suppression
+        </h2>
+        <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="confirm-message">
+          Êtes-vous sûr de vouloir supprimer la catégorie 
+          <strong>{{ selectedCategorie?.nom }}</strong> ?
+        </p>
+        <p class="confirm-warning">
+          ⚠️ Cette action est irréversible. Les livres de cette catégorie devront être réaffectés.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="closeDeleteModal()">
+          Annuler
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-danger" 
+          (click)="confirmDelete()">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

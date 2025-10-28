@@ -1,0 +1,353 @@
+<!-- ============================================
+     src/app/pages/profil/profil.component.html
+     ============================================ -->
+<div class="profil-container">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-large"></div>
+    <p>Chargement du profil...</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading" class="profil-content">
+    <!-- Header avec Avatar -->
+    <div class="profil-header">
+      <div class="header-background">
+        <div class="background-circle circle-1"></div>
+        <div class="background-circle circle-2"></div>
+        <div class="background-circle circle-3"></div>
+      </div>
+      
+      <div class="header-content">
+        <div class="avatar-section">
+          <div class="avatar-large" [class]="userRoleColor">
+            <span class="avatar-text">{{ userInitials }}</span>
+            <span class="avatar-status"></span>
+          </div>
+          
+          <div class="user-info">
+            <h1 class="user-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</h1>
+            <p class="user-role-badge" [class]="userRoleColor">
+              <span class="role-icon">
+                {{ currentUser?.role === 'administrateur' ? '👑' : 
+                   currentUser?.role === 'bibliothecaire' ? '📚' : '📖' }}
+              </span>
+              {{ userRoleLabel }}
+            </p>
+            <p class="user-member-since">
+              <span class="member-icon">🗓️</span>
+              Membre depuis {{ memberSince }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="successMessage" class="alert alert-success">
+      <span class="alert-icon">✅</span>
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-error">
+      <span class="alert-icon">⚠️</span>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-navigation">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'informations'"
+        (click)="setActiveTab('informations')">
+        <span class="tab-icon">👤</span>
+        Informations personnelles
+      </button>
+
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'securite'"
+        (click)="setActiveTab('securite')">
+        <span class="tab-icon">🔒</span>
+        Sécurité
+      </button>
+
+      <button 
+        *ngIf="isLecteur"
+        class="tab-button"
+        [class.active]="activeTab === 'statistiques'"
+        (click)="setActiveTab('statistiques')">
+        <span class="tab-icon">📊</span>
+        Mes statistiques
+      </button>
+    </div>
+
+    <!-- Tab Content: Informations -->
+    <div *ngIf="activeTab === 'informations'" class="tab-content">
+      <div class="content-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <span class="title-icon">✏️</span>
+            Modifier mes informations
+          </h2>
+          <p class="card-subtitle">Mettez à jour vos informations personnelles</p>
+        </div>
+
+        <form [formGroup]="infoForm" (ngSubmit)="submitInfoForm()" class="form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">
+                Nom <span class="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                formControlName="nom"
+                class="form-input"
+                [class.invalid]="isFieldInvalid(infoForm, 'nom')"
+                placeholder="Votre nom">
+              <span class="form-error" *ngIf="isFieldInvalid(infoForm, 'nom')">
+                {{ getFieldError(infoForm, 'nom') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                Prénom <span class="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                formControlName="prenom"
+                class="form-input"
+                [class.invalid]="isFieldInvalid(infoForm, 'prenom')"
+                placeholder="Votre prénom">
+              <span class="form-error" *ngIf="isFieldInvalid(infoForm, 'prenom')">
+                {{ getFieldError(infoForm, 'prenom') }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Email <span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              formControlName="email"
+              class="form-input"
+              [class.invalid]="isFieldInvalid(infoForm, 'email')"
+              placeholder="votre.email@example.com">
+            <span class="form-error" *ngIf="isFieldInvalid(infoForm, 'email')">
+              {{ getFieldError(infoForm, 'email') }}
+            </span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Téléphone</label>
+              <input 
+                type="tel" 
+                formControlName="telephone"
+                class="form-input"
+                [class.invalid]="isFieldInvalid(infoForm, 'telephone')"
+                placeholder="771234567">
+              <span class="form-error" *ngIf="isFieldInvalid(infoForm, 'telephone')">
+                {{ getFieldError(infoForm, 'telephone') }}
+              </span>
+            </div>
+
+            <div class="form-group" *ngIf="isLecteur">
+              <label class="form-label">Date de naissance</label>
+              <input 
+                type="date" 
+                formControlName="date_naissance"
+                class="form-input">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="submittingInfo || infoForm.invalid">
+              <span *ngIf="!submittingInfo">💾 Enregistrer les modifications</span>
+              <span *ngIf="submittingInfo" class="spinner-inline"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tab Content: Sécurité -->
+    <div *ngIf="activeTab === 'securite'" class="tab-content">
+      <div class="content-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <span class="title-icon">🔐</span>
+            Changer mon mot de passe
+          </h2>
+          <p class="card-subtitle">Assurez-vous d'utiliser un mot de passe fort et unique</p>
+        </div>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="submitPasswordForm()" class="form">
+          <div class="form-group">
+            <label class="form-label">
+              Mot de passe actuel <span class="required">*</span>
+            </label>
+            <input 
+              type="password" 
+              formControlName="current_password"
+              class="form-input"
+              [class.invalid]="isFieldInvalid(passwordForm, 'current_password')"
+              placeholder="Votre mot de passe actuel">
+            <span class="form-error" *ngIf="isFieldInvalid(passwordForm, 'current_password')">
+              {{ getFieldError(passwordForm, 'current_password') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Nouveau mot de passe <span class="required">*</span>
+            </label>
+            <input 
+              type="password" 
+              formControlName="new_password"
+              class="form-input"
+              [class.invalid]="isFieldInvalid(passwordForm, 'new_password')"
+              placeholder="Minimum 8 caractères">
+            <span class="form-hint">
+              Le mot de passe doit contenir au moins 8 caractères
+            </span>
+            <span class="form-error" *ngIf="isFieldInvalid(passwordForm, 'new_password')">
+              {{ getFieldError(passwordForm, 'new_password') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Confirmer le nouveau mot de passe <span class="required">*</span>
+            </label>
+            <input 
+              type="password" 
+              formControlName="new_password_confirmation"
+              class="form-input"
+              [class.invalid]="isFieldInvalid(passwordForm, 'new_password_confirmation') || getPasswordError()"
+              placeholder="Retapez le nouveau mot de passe">
+            <span class="form-error" *ngIf="getPasswordError()">
+              {{ getPasswordError() }}
+            </span>
+          </div>
+
+          <div class="security-tips">
+            <h3 class="tips-title">💡 Conseils de sécurité</h3>
+            <ul class="tips-list">
+              <li>✅ Utilisez au moins 8 caractères</li>
+              <li>✅ Mélangez majuscules et minuscules</li>
+              <li>✅ Incluez des chiffres et symboles</li>
+              <li>✅ Évitez les informations personnelles</li>
+            </ul>
+          </div>
+
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="submittingPassword || passwordForm.invalid">
+              <span *ngIf="!submittingPassword">🔒 Changer le mot de passe</span>
+              <span *ngIf="submittingPassword" class="spinner-inline"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tab Content: Statistiques (Lecteur uniquement) -->
+    <div *ngIf="activeTab === 'statistiques' && isLecteur" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon-large">📚</div>
+          <div class="stat-value">{{ stats.total_emprunts }}</div>
+          <div class="stat-label">Total Emprunts</div>
+          <div class="stat-progress">
+            <div class="progress-bar blue" style="width: 85%"></div>
+          </div>
+        </div>
+
+        <div class="stat-card green">
+          <div class="stat-icon-large">📖</div>
+          <div class="stat-value">{{ stats.emprunts_en_cours }}</div>
+          <div class="stat-label">En cours</div>
+          <div class="stat-progress">
+            <div class="progress-bar green" style="width: 60%"></div>
+          </div>
+        </div>
+
+        <div class="stat-card purple">
+          <div class="stat-icon-large">✅</div>
+          <div class="stat-value">{{ stats.livres_lus }}</div>
+          <div class="stat-label">Livres terminés</div>
+          <div class="stat-progress">
+            <div class="progress-bar purple" style="width: 93%"></div>
+          </div>
+        </div>
+
+        <div class="stat-card" [class]="stats.retards > 0 ? 'orange' : 'green'">
+          <div class="stat-icon-large">{{ stats.retards > 0 ? '⚠️' : '🎯' }}</div>
+          <div class="stat-value">{{ stats.retards }}</div>
+          <div class="stat-label">Retards</div>
+          <div class="stat-progress">
+            <div class="progress-bar" 
+                 [class]="stats.retards > 0 ? 'orange' : 'green'" 
+                 [style.width.%]="stats.retards * 10"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <span class="title-icon">📊</span>
+            Résumé de l'activité
+          </h2>
+        </div>
+
+        <div class="activity-summary">
+          <div class="summary-item">
+            <span class="summary-icon">🗓️</span>
+            <div class="summary-content">
+              <div class="summary-label">Membre depuis</div>
+              <div class="summary-value">{{ getMembershipDuration() }}</div>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-icon">💰</span>
+            <div class="summary-content">
+              <div class="summary-label">Pénalités totales</div>
+              <div class="summary-value">{{ stats.penalites_total }} FCFA</div>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-icon">📈</span>
+            <div class="summary-content">
+              <div class="summary-label">Taux de lecture</div>
+              <div class="summary-value">{{ (stats.livres_lus / stats.total_emprunts * 100).toFixed(0) }}%</div>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-icon">⭐</span>
+            <div class="summary-content">
+              <div class="summary-label">Niveau lecteur</div>
+              <div class="summary-value">
+                {{ stats.total_emprunts > 50 ? 'Expert' : 
+                   stats.total_emprunts > 20 ? 'Avancé' : 
+                   stats.total_emprunts > 10 ? 'Intermédiaire' : 'Débutant' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
