@@ -138,6 +138,14 @@
           </button>
 
           <button 
+            *ngIf="!livre.est_disponible && isAuthenticated"
+            class="btn btn-secondary"
+            (click)="reserverLivre()">
+            <span class="btn-icon">📚</span>
+            Réserver ce livre
+          </button>
+
+          <button 
             *ngIf="!livre.est_disponible"
             (click)="reserver()" 
             class="btn btn-outline btn-lg btn-reserver">

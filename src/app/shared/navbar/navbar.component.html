@@ -36,26 +36,71 @@
         <span>Catalogue</span>
       </a>
 
-      <!-- Liens Lecteur (si connecté) -->
-      <ng-container *ngIf="isAuthenticated && isLecteur">
-        <a 
-          routerLink="/dashboard" 
-          routerLinkActive="active"
-          class="nav-link"
-          (click)="closeAllMenus()">
-          <span class="nav-icon">📊</span>
-          <span>Mon Espace</span>
-        </a>
-
-        <a 
-          routerLink="/mes-emprunts" 
-          routerLinkActive="active"
-          class="nav-link"
-          (click)="closeAllMenus()">
+      <!-- Liens Lecteur (si connecté) - Menu Dropdown -->
+      <div 
+        *ngIf="isAuthenticated && isLecteur" 
+        class="nav-dropdown"
+        [class.active]="lecteurMenuOpen">
+        <button 
+          class="nav-link dropdown-trigger"
+          (click)="toggleLecteurMenu()">
           <span class="nav-icon">📚</span>
-          <span>Mes Emprunts</span>
-        </a>
-      </ng-container>
+          <span>Mon Espace</span>
+          <span class="dropdown-arrow" [class.open]="lecteurMenuOpen">▼</span>
+        </button>
+
+        <div class="dropdown-menu" *ngIf="lecteurMenuOpen">
+          <a 
+            routerLink="/dashboard" 
+            routerLinkActive="active-dropdown"
+            class="dropdown-item"
+            (click)="closeAllMenus()">
+            <span class="dropdown-icon">📊</span>
+            <div class="dropdown-text">
+              <span class="dropdown-title">Dashboard</span>
+              <span class="dropdown-subtitle">Vue d'ensemble</span>
+            </div>
+          </a>
+
+          <a 
+            routerLink="/mes-emprunts" 
+            routerLinkActive="active-dropdown"
+            class="dropdown-item"
+            (click)="closeAllMenus()">
+            <span class="dropdown-icon">📖</span>
+            <div class="dropdown-text">
+              <span class="dropdown-title">Mes Emprunts</span>
+              <span class="dropdown-subtitle">Livres empruntés</span>
+            </div>
+          </a>
+
+          <a 
+            routerLink="/mes-reservations" 
+            routerLinkActive="active-dropdown"
+            class="dropdown-item"
+            (click)="closeAllMenus()">
+            <span class="dropdown-icon">📚</span>
+            <div class="dropdown-text">
+              <span class="dropdown-title">Mes Réservations</span>
+              <span class="dropdown-subtitle">Livres réservés</span>
+            </div>
+          </a>
+
+          <div class="dropdown-divider"></div>
+
+          <a 
+            routerLink="/mes-penalites" 
+            routerLinkActive="active-dropdown"
+            class="dropdown-item"
+            (click)="closeAllMenus()">
+            <span class="dropdown-icon">💰</span>
+            <div class="dropdown-text">
+              <span class="dropdown-title">Mes Pénalités</span>
+              <span class="dropdown-subtitle">Amendes et retards</span>
+            </div>
+          </a>
+        </div>
+      </div>
 
       <!-- Menu Admin/Bibliothécaire -->
       <div 
@@ -84,6 +129,20 @@
           </a>
 
           <a 
+            routerLink="/admin/statistiques" 
+            routerLinkActive="active-dropdown"
+            class="dropdown-item"
+            (click)="closeAllMenus()">
+            <span class="dropdown-icon">📈</span>
+            <div class="dropdown-text">
+              <span class="dropdown-title">Statistiques</span>
+              <span class="dropdown-subtitle">Rapports détaillés</span>
+            </div>
+          </a>
+
+          <div class="dropdown-divider"></div>
+
+          <a 
             routerLink="/admin/livres" 
             routerLinkActive="active-dropdown"
             class="dropdown-item"
@@ -92,6 +151,18 @@
             <div class="dropdown-text">
               <span class="dropdown-title">Catalogue</span>
               <span class="dropdown-subtitle">Gérer les livres</span>
+            </div>
+          </a>
+
+          <a 
+            routerLink="/admin/categories" 
+            routerLinkActive="active-dropdown"
+            class="dropdown-item"
+            (click)="closeAllMenus()">
+            <span class="dropdown-icon">🏷️</span>
+            <div class="dropdown-text">
+              <span class="dropdown-title">Catégories</span>
+              <span class="dropdown-subtitle">Gérer les catégories</span>
             </div>
           </a>
 
@@ -119,26 +190,15 @@
               <span class="dropdown-subtitle">Gérer les comptes</span>
             </div>
           </a>
-
-          <div class="dropdown-divider"></div>
-
-          <a 
-            routerLink="/admin/statistiques" 
-            routerLinkActive="active-dropdown"
-            class="dropdown-item"
-            (click)="closeAllMenus()">
-            <span class="dropdown-icon">📈</span>
-            <div class="dropdown-text">
-              <span class="dropdown-title">Statistiques</span>
-              <span class="dropdown-subtitle">Rapports détaillés</span>
-            </div>
-          </a>
         </div>
       </div>
     </div>
 
     <!-- Actions droite -->
     <div class="navbar-actions">
+      <!-- Notification Bell (si connecté) -->
+      <app-notification-bell *ngIf="isAuthenticated"></app-notification-bell>
+
       <!-- Non connecté -->
       <ng-container *ngIf="!isAuthenticated">
         <a routerLink="/login" class="btn btn-ghost">
@@ -151,7 +211,7 @@
         </a>
       </ng-container>
 
-      <!-- Connecté -->
+      <!-- Connecté - Menu Utilisateur -->
       <div *ngIf="isAuthenticated" class="user-menu" [class.active]="userMenuOpen">
         <button class="user-button" (click)="toggleUserMenu()">
           <div class="user-avatar" [class]="userRoleColor">
@@ -190,41 +250,11 @@
           </a>
 
           <a 
-            *ngIf="isLecteur"
-            routerLink="/dashboard" 
-            class="dropdown-item"
-            (click)="closeAllMenus()">
-            <span class="dropdown-icon">📊</span>
-            <span class="dropdown-title">Mon Espace</span>
-          </a>
-
-          <a 
-            *ngIf="isLecteur"
-            routerLink="/mes-emprunts" 
-            class="dropdown-item"
-            (click)="closeAllMenus()">
-            <span class="dropdown-icon">📚</span>
-            <span class="dropdown-title">Mes Emprunts</span>
-          </a>
-
-          <a 
             routerLink="/parametres" 
             class="dropdown-item"
             (click)="closeAllMenus()">
             <span class="dropdown-icon">⚙️</span>
             <span class="dropdown-title">Paramètres</span>
-          </a>
-
-          <a 
-            routerLink="/admin/categories" 
-            routerLinkActive="active-dropdown"
-            class="dropdown-item"
-            (click)="closeAllMenus()">
-            <span class="dropdown-icon">🏷️</span>
-            <div class="dropdown-text">
-              <span class="dropdown-title">Catégories</span>
-              <span class="dropdown-subtitle">Gérer les catégories</span>
-            </div>
           </a>
 
           <div class="dropdown-divider"></div>
@@ -247,7 +277,7 @@
 
   <!-- Overlay pour fermer les menus -->
   <div 
-    *ngIf="mobileMenuOpen || userMenuOpen || adminMenuOpen" 
+    *ngIf="mobileMenuOpen || userMenuOpen || adminMenuOpen || lecteurMenuOpen" 
     class="navbar-overlay"
     (click)="closeAllMenus()">
   </div>

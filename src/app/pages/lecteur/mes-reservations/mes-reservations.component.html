@@ -1,0 +1,280 @@
+<!-- ============================================
+     src/app/pages/lecteur/mes-reservations/mes-reservations.component.html
+     ============================================ -->
+<div class="reservations-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">
+          <span class="title-icon">📚</span>
+          Mes Réservations
+        </h1>
+        <p class="page-subtitle">Gérez vos réservations de livres</p>
+      </div>
+      <button class="btn btn-primary" routerLink="/livres">
+        <span class="btn-icon">🔍</span>
+        Parcourir le Catalogue
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="stats">
+    <div class="stat-card blue">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ nombreEnAttente }}</div>
+        <div class="stat-label">En Attente</div>
+      </div>
+      <div class="stat-glow"></div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ nombreDisponibles }}</div>
+        <div class="stat-label">Disponibles</div>
+      </div>
+      <div class="stat-glow"></div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.total_reservations }}</div>
+        <div class="stat-label">Total Réservations</div>
+      </div>
+      <div class="stat-glow"></div>
+    </div>
+
+    <div class="stat-card orange">
+      <div class="stat-icon">⏰</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.reservations_expirees }}</div>
+        <div class="stat-label">Expirées</div>
+      </div>
+      <div class="stat-glow"></div>
+    </div>
+  </div>
+
+  <!-- Alert si réservations disponibles -->
+  <div class="alert alert-success" *ngIf="nombreDisponibles > 0">
+    <span class="alert-icon">🎉</span>
+    <div class="alert-content">
+      <strong>Bonne nouvelle !</strong> Vous avez {{ nombreDisponibles }} livre(s) disponible(s) 
+      pour emprunt. Passez à la bibliothèque pour les récupérer avant qu'ils n'expirent !
+    </div>
+  </div>
+
+  <!-- Alert si aucune réservation -->
+  <div class="alert alert-info" *ngIf="stats && stats.total_reservations === 0">
+    <span class="alert-icon">📚</span>
+    <div class="alert-content">
+      <strong>Aucune réservation.</strong> Réservez un livre indisponible pour être notifié 
+      dès qu'il devient disponible !
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-navigation">
+    <button 
+      class="tab-button"
+      [class.active]="activeTab === 'en_attente'"
+      (click)="setActiveTab('en_attente')">
+      <span class="tab-icon">⏳</span>
+      <span>En Attente</span>
+      <span class="tab-badge" *ngIf="nombreEnAttente > 0">{{ nombreEnAttente }}</span>
+    </button>
+
+    <button 
+      class="tab-button"
+      [class.active]="activeTab === 'disponibles'"
+      (click)="setActiveTab('disponibles')">
+      <span class="tab-icon">✅</span>
+      <span>Disponibles</span>
+      <span class="tab-badge success" *ngIf="nombreDisponibles > 0">{{ nombreDisponibles }}</span>
+    </button>
+
+    <button 
+      class="tab-button"
+      [class.active]="activeTab === 'toutes'"
+      (click)="setActiveTab('toutes')">
+      <span class="tab-icon">📋</span>
+      <span>Toutes</span>
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement des réservations...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-message">
+    <span class="error-icon">⚠️</span>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Liste des réservations -->
+  <div *ngIf="!loading && !error" class="reservations-list">
+    <div *ngIf="reservations.length === 0" class="empty-state">
+      <span class="empty-icon">
+        {{ activeTab === 'en_attente' ? '⏳' : 
+           activeTab === 'disponibles' ? '✅' : '📋' }}
+      </span>
+      <h3>{{ activeTab === 'en_attente' ? 'Aucune réservation en attente' : 
+              activeTab === 'disponibles' ? 'Aucune réservation disponible' : 
+              'Aucune réservation' }}</h3>
+      <p>
+        {{ activeTab === 'en_attente' ? 'Réservez des livres indisponibles pour être notifié quand ils sont disponibles.' : 
+           activeTab === 'disponibles' ? 'Vous n\'avez pas de livres disponibles à récupérer pour le moment.' : 
+           'Vous n\'avez aucune réservation enregistrée.' }}
+      </p>
+      <button class="btn btn-primary" routerLink="/livres">
+        <span class="btn-icon">🔍</span>
+        Parcourir le Catalogue
+      </button>
+    </div>
+
+    <div class="reservations-grid" *ngIf="reservations.length > 0">
+      <div *ngFor="let reservation of reservations" class="reservation-card">
+        <!-- Status Badge -->
+        <div class="reservation-status" [ngClass]="getStatusClass(reservation.statut)">
+          <span class="status-icon">{{ getStatusIcon(reservation.statut) }}</span>
+          <span class="status-text">{{ getStatusLabel(reservation.statut) }}</span>
+        </div>
+
+        <!-- Livre Info -->
+        <div class="reservation-livre">
+          <div class="livre-cover">
+            <img 
+              *ngIf="reservation.livre?.image_url" 
+              [src]="reservation.livre.image_url" 
+              [alt]="reservation.livre.titre"
+              class="cover-img">
+            <div *ngIf="!reservation.livre?.image_url" class="cover-placeholder">
+              📖
+            </div>
+          </div>
+
+          <div class="livre-info">
+            <h3 class="livre-titre">{{ reservation.livre?.titre || 'Titre non disponible' }}</h3>
+            <p class="livre-auteur">{{ reservation.livre?.auteur || 'Auteur inconnu' }}</p>
+            
+            <div class="livre-meta">
+              <span class="meta-item">
+                <span class="meta-icon">📅</span>
+                Réservé le {{ formatDate(reservation.date_reservation) }}
+              </span>
+              
+              <span class="meta-item" *ngIf="reservation.statut === 'en_attente'">
+                <span class="meta-icon">👥</span>
+                Position: {{ getPositionFile(reservation) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="reservation-actions">
+          <a 
+            *ngIf="reservation.statut === 'disponible'"
+            routerLink="/livres/{{ reservation.livre?.id }}"
+            class="btn btn-success btn-sm">
+            <span class="btn-icon">👁️</span>
+            Voir le Livre
+          </a>
+
+          <button 
+            *ngIf="reservation.statut === 'en_attente' || reservation.statut === 'disponible'"
+            class="btn btn-danger btn-sm"
+            (click)="annulerReservation(reservation)">
+            <span class="btn-icon">✕</span>
+            Annuler
+          </button>
+
+          <a 
+            *ngIf="reservation.statut === 'expiree' || reservation.statut === 'annulee'"
+            routerLink="/livres/{{ reservation.livre?.id }}"
+            class="btn btn-secondary btn-sm">
+            <span class="btn-icon">🔄</span>
+            Réserver à nouveau
+          </a>
+        </div>
+
+        <!-- Alert spécifique -->
+        <div class="reservation-alert" *ngIf="reservation.statut === 'disponible'">
+          <span class="alert-icon">⚠️</span>
+          <p>Ce livre est maintenant disponible ! Passez le récupérer rapidement avant expiration.</p>
+        </div>
+
+        <div class="reservation-alert info" *ngIf="reservation.statut === 'en_attente'">
+          <span class="alert-icon">💡</span>
+          <p>Vous serez notifié dès que ce livre devient disponible.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        class="pagination-btn"
+        [disabled]="currentPage === 1"
+        (click)="changePage(currentPage - 1)">
+        ← Précédent
+      </button>
+
+      <div class="pagination-pages">
+        <button 
+          *ngFor="let page of [].constructor(totalPages); let i = index"
+          class="pagination-page"
+          [class.active]="currentPage === i + 1"
+          (click)="changePage(i + 1)">
+          {{ i + 1 }}
+        </button>
+      </div>
+
+      <button 
+        class="pagination-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(currentPage + 1)">
+        Suivant →
+      </button>
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <div class="info-section">
+    <h3 class="info-title">
+      <span class="info-icon">💡</span>
+      Comment fonctionnent les réservations ?
+    </h3>
+    <div class="info-grid">
+      <div class="info-card">
+        <span class="info-emoji">🔍</span>
+        <h4>Trouver un livre</h4>
+        <p>Parcourez le catalogue et trouvez le livre que vous souhaitez lire.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="info-emoji">📚</span>
+        <h4>Réserver</h4>
+        <p>Si le livre est indisponible, cliquez sur "Réserver" pour être mis en file d'attente.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="info-emoji">🔔</span>
+        <h4>Notification</h4>
+        <p>Vous recevrez une notification dès que le livre sera disponible pour vous.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="info-emoji">⏰</span>
+        <h4>Récupérer</h4>
+        <p>Passez à la bibliothèque dans les 48h pour emprunter le livre réservé.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -6,11 +6,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/user';
+import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, NotificationBellComponent],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -20,6 +21,7 @@ export class NavbarComponent implements OnInit {
   mobileMenuOpen = false;
   userMenuOpen = false;
   adminMenuOpen = false;
+  lecteurMenuOpen = false; // ← NOUVEAU
 
   constructor(
     private authService: AuthService,
@@ -39,40 +41,50 @@ export class NavbarComponent implements OnInit {
     // Fermer les autres menus
     this.userMenuOpen = false;
     this.adminMenuOpen = false;
+    this.lecteurMenuOpen = false;
   }
 
   toggleUserMenu() {
     this.userMenuOpen = !this.userMenuOpen;
     this.adminMenuOpen = false;
+    this.lecteurMenuOpen = false;
   }
 
   toggleAdminMenu() {
     this.adminMenuOpen = !this.adminMenuOpen;
     this.userMenuOpen = false;
+    this.lecteurMenuOpen = false;
+  }
+
+  toggleLecteurMenu() {
+    this.lecteurMenuOpen = !this.lecteurMenuOpen;
+    this.userMenuOpen = false;
+    this.adminMenuOpen = false;
   }
 
   closeAllMenus() {
     this.mobileMenuOpen = false;
     this.userMenuOpen = false;
     this.adminMenuOpen = false;
+    this.lecteurMenuOpen = false;
   }
 
-logout() {
-  if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.closeAllMenus();
-        this.router.navigate(['/login']);
-      },
-      error: (error) => {
-        console.error('Erreur lors de la déconnexion:', error);
-        // Même en cas d'erreur, on déconnecte côté client
-        this.closeAllMenus();
-        this.router.navigate(['/login']);
-      }
-    });
+  logout() {
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+      this.authService.logout().subscribe({
+        next: () => {
+          this.closeAllMenus();
+          this.router.navigate(['/login']);
+        },
+        error: (error) => {
+          console.error('Erreur lors de la déconnexion:', error);
+          // Même en cas d'erreur, on déconnecte côté client
+          this.closeAllMenus();
+          this.router.navigate(['/login']);
+        }
+      });
+    }
   }
-}
 
   // Vérifier les rôles
   get isLecteur(): boolean {

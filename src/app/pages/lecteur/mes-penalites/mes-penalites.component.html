@@ -1,0 +1,250 @@
+<!-- ============================================
+     src/app/pages/lecteur/mes-penalites/mes-penalites.component.html
+     ============================================ -->
+<div class="penalites-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">
+          <span class="title-icon">💰</span>
+          Mes Pénalités
+        </h1>
+        <p class="page-subtitle">Consultez et gérez vos amendes de retard</p>
+      </div>
+      <button class="btn btn-primary" routerLink="/mes-emprunts">
+        <span class="btn-icon">📚</span>
+        Mes Emprunts
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="stats">
+    <div class="stat-card orange">
+      <div class="stat-icon">⚠️</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ nombrePenalitesImpayees }}</div>
+        <div class="stat-label">Pénalités Impayées</div>
+      </div>
+      <div class="stat-glow"></div>
+    </div>
+
+    <div class="stat-card red">
+      <div class="stat-icon">💸</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ formatMontant(montantTotalImpaye) }}</div>
+        <div class="stat-label">Montant Total à Payer</div>
+      </div>
+      <div class="stat-glow"></div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.penalites_payees || 0 }}</div>
+        <div class="stat-label">Pénalités Payées</div>
+      </div>
+      <div class="stat-glow"></div>
+    </div>
+
+    <div class="stat-card blue">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ formatMontant(stats.montant_total_paye) }}</div>
+        <div class="stat-label">Total Payé</div>
+      </div>
+      <div class="stat-glow"></div>
+    </div>
+  </div>
+
+  <!-- Alert si pénalités impayées -->
+  <div class="alert alert-warning" *ngIf="nombrePenalitesImpayees > 0">
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-content">
+      <strong>Attention !</strong> Vous avez {{ nombrePenalitesImpayees }} pénalité(s) impayée(s) 
+      pour un montant total de <strong>{{ formatMontant(montantTotalImpaye) }}</strong>.
+      <br>
+      <small>Les pénalités non payées peuvent bloquer vos futurs emprunts.</small>
+    </div>
+  </div>
+
+  <!-- Alert si aucune pénalité -->
+  <div class="alert alert-success" *ngIf="stats && stats.total_penalites === 0">
+    <span class="alert-icon">🎉</span>
+    <div class="alert-content">
+      <strong>Excellent !</strong> Vous n'avez aucune pénalité. Continuez à retourner vos livres à temps !
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-navigation">
+    <button 
+      class="tab-button"
+      [class.active]="activeTab === 'impayees'"
+      (click)="setActiveTab('impayees')">
+      <span class="tab-icon">⚠️</span>
+      <span>Impayées</span>
+      <span class="tab-badge" *ngIf="nombrePenalitesImpayees > 0">{{ nombrePenalitesImpayees }}</span>
+    </button>
+
+    <button 
+      class="tab-button"
+      [class.active]="activeTab === 'payees'"
+      (click)="setActiveTab('payees')">
+      <span class="tab-icon">✅</span>
+      <span>Payées</span>
+    </button>
+
+    <button 
+      class="tab-button"
+      [class.active]="activeTab === 'toutes'"
+      (click)="setActiveTab('toutes')">
+      <span class="tab-icon">📋</span>
+      <span>Toutes</span>
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement des pénalités...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-message">
+    <span class="error-icon">⚠️</span>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Liste des pénalités -->
+  <div *ngIf="!loading && !error" class="penalites-list">
+    <div *ngIf="penalites.length === 0" class="empty-state">
+      <span class="empty-icon">
+        {{ activeTab === 'impayees' ? '🎉' : activeTab === 'payees' ? '📋' : '📄' }}
+      </span>
+      <h3>{{ activeTab === 'impayees' ? 'Aucune pénalité impayée' : 
+              activeTab === 'payees' ? 'Aucune pénalité payée' : 
+              'Aucune pénalité' }}</h3>
+      <p>
+        {{ activeTab === 'impayees' ? 'Continuez à retourner vos livres à temps !' : 
+           activeTab === 'payees' ? 'Vous n\'avez pas encore payé de pénalité.' : 
+           'Vous n\'avez aucune pénalité enregistrée.' }}
+      </p>
+    </div>
+
+    <div class="penalites-grid" *ngIf="penalites.length > 0">
+      <div *ngFor="let penalite of penalites" class="penalite-card">
+        <div class="penalite-header">
+          <div class="penalite-badge" [ngClass]="getStatusClass(penalite.statut)">
+            {{ getStatusLabel(penalite.statut) }}
+          </div>
+          <div class="penalite-montant">{{ formatMontant(penalite.montant) }}</div>
+        </div>
+
+        <div class="penalite-body">
+          <div class="penalite-info">
+            <span class="info-icon">📖</span>
+            <div class="info-content">
+              <div class="info-label">Livre</div>
+              <div class="info-value">{{ penalite.emprunt?.exemplaire?.livre?.titre || 'Non spécifié' }}</div>
+            </div>
+          </div>
+
+          <div class="penalite-info">
+            <span class="info-icon">📝</span>
+            <div class="info-content">
+              <div class="info-label">Motif</div>
+              <div class="info-value">{{ penalite.motif }}</div>
+            </div>
+          </div>
+
+          <div class="penalite-dates">
+            <div class="date-item">
+              <span class="date-icon">📅</span>
+              <div class="date-content">
+                <div class="date-label">Date de création</div>
+                <div class="date-value">{{ formatDate(penalite.date_creation) }}</div>
+              </div>
+            </div>
+
+            <div class="date-item" *ngIf="penalite.date_paiement">
+              <span class="date-icon">💳</span>
+              <div class="date-content">
+                <div class="date-label">Date de paiement</div>
+                <div class="date-value">{{ formatDate(penalite.date_paiement) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="penalite-footer" *ngIf="penalite.statut === 'impayee'">
+          <button class="btn btn-secondary btn-sm" disabled>
+            <span class="btn-icon">💳</span>
+            Payer en ligne (Bientôt disponible)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        class="pagination-btn"
+        [disabled]="currentPage === 1"
+        (click)="changePage(currentPage - 1)">
+        ← Précédent
+      </button>
+
+      <div class="pagination-pages">
+        <button 
+          *ngFor="let page of [].constructor(totalPages); let i = index"
+          class="pagination-page"
+          [class.active]="currentPage === i + 1"
+          (click)="changePage(i + 1)">
+          {{ i + 1 }}
+        </button>
+      </div>
+
+      <button 
+        class="pagination-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(currentPage + 1)">
+        Suivant →
+      </button>
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <div class="info-section">
+    <h3 class="info-title">
+      <span class="info-icon">💡</span>
+      À savoir sur les pénalités
+    </h3>
+    <div class="info-grid">
+      <div class="info-card">
+        <span class="info-emoji">⏱️</span>
+        <h4>Calcul automatique</h4>
+        <p>Les pénalités sont calculées automatiquement chaque jour à partir de la date de retour prévue.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="info-emoji">💰</span>
+        <h4>Tarif unique</h4>
+        <p>Le tarif est de <strong>100 FCFA par jour de retard</strong> pour tous les emprunts.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="info-emoji">🚫</span>
+        <h4>Blocage des emprunts</h4>
+        <p>Les pénalités impayées peuvent bloquer vos nouveaux emprunts jusqu'au règlement.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="info-emoji">💳</span>
+        <h4>Modes de paiement</h4>
+        <p>Payez vos pénalités directement au comptoir de la bibliothèque ou en ligne (bientôt).</p>
+      </div>
+    </div>
+  </div>
+</div>

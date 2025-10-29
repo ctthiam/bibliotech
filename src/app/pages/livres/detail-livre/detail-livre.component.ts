@@ -136,6 +136,11 @@ export class DetailLivreComponent implements OnInit {
     });
   }
 
+  reserverLivre() {
+  // TODO: Implémenter la réservation
+  this.router.navigate(['/mes-reservations']);
+  }
+
   reserver() {
     if (!this.isAuthenticated) {
       alert('Vous devez être connecté pour réserver un livre');

@@ -839,3 +839,37 @@
   outline: 3px solid rgba(255, 255, 255, 0.5);
   outline-offset: 2px;
 }
+
+/* ============================================
+   AJOUTEZ CE CSS à la fin de navbar.component.css
+   Pour intégrer la notification bell
+   ============================================ */
+
+/* Actions Layout avec Notification Bell */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.navbar-actions app-notification-bell {
+  display: flex;
+  align-items: center;
+}
+
+/* Ajustement du menu lecteur (même style que admin) */
+.nav-dropdown:has(.dropdown-trigger:focus-within) .dropdown-menu,
+.nav-dropdown.active .dropdown-menu {
+  display: block;
+}
+
+/* Mobile - espacement pour la cloche */
+@media (max-width: 768px) {
+  .navbar-actions {
+    gap: 0.5rem;
+  }
+  
+  .navbar-actions app-notification-bell {
+    order: -1; /* Mettre la cloche avant le burger menu */
+  }
+}
