@@ -179,6 +179,18 @@
           </a>
 
           <a 
+            routerLink="/admin/rapports" 
+            routerLinkActive="active-dropdown"
+            class="dropdown-item"
+            (click)="closeAllMenus()">
+            <span class="dropdown-icon">📊</span>
+            <div class="dropdown-text">
+              <span class="dropdown-title">Rapports</span>
+              <span class="dropdown-subtitle">Générer des documents</span>
+            </div>
+          </a>
+
+          <a 
             *ngIf="isAdministrateur"
             routerLink="/admin/utilisateurs" 
             routerLinkActive="active-dropdown"

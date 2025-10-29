@@ -79,6 +79,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/lecteur/mes-reservations/mes-reservations.component').then(m => m.MesReservationsComponent)
   },
+  {
+    path: 'admin/rapports',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/admin/rapports/rapports.component').then(m => m.RapportsComponent)
+  },
   // Catch-all
   { path: '**', redirectTo: 'home' }
 ];

@@ -1,0 +1,207 @@
+<!-- ============================================
+     src/app/pages/admin/rapports/rapports.component.html
+     ============================================ -->
+<div class="rapports-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">
+          <span class="title-icon">📊</span>
+          Rapports & Exports
+        </h1>
+        <p class="page-subtitle">Générez et téléchargez des rapports détaillés</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres pour rapports avec période -->
+  <div class="filters-card">
+    <h3 class="filters-title">
+      <span class="filters-icon">🔍</span>
+      Filtrer par période
+    </h3>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label class="filter-label">Mois</label>
+        <select [(ngModel)]="moisSelectionne" class="filter-select">
+          <option *ngFor="let m of mois" [value]="m.value">{{ m.label }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Année</label>
+        <select [(ngModel)]="anneeSelectionnee" class="filter-select">
+          <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rapports Admin -->
+  <div class="rapports-section">
+    <h2 class="section-title">
+      <span class="section-icon">👨‍💼</span>
+      Rapports Administrateur
+    </h2>
+
+    <div class="rapports-grid">
+      <!-- Rapport Mensuel -->
+      <div class="rapport-card blue">
+        <div class="rapport-icon">📅</div>
+        <div class="rapport-content">
+          <h3 class="rapport-title">Rapport Mensuel</h3>
+          <p class="rapport-description">
+            Statistiques complètes des emprunts du mois sélectionné
+          </p>
+          <ul class="rapport-features">
+            <li>✓ Total des emprunts</li>
+            <li>✓ Lecteurs actifs</li>
+            <li>✓ Livres les plus empruntés</li>
+          </ul>
+        </div>
+        <button 
+          class="rapport-btn"
+          (click)="telechargerRapportMensuel()"
+          [disabled]="loading">
+          <span *ngIf="!loading">📥 Télécharger PDF</span>
+          <span *ngIf="loading" class="spinner-inline"></span>
+        </button>
+      </div>
+
+      <!-- Rapport Annuel -->
+      <div class="rapport-card green">
+        <div class="rapport-icon">📈</div>
+        <div class="rapport-content">
+          <h3 class="rapport-title">Rapport Annuel</h3>
+          <p class="rapport-description">
+            Bilan complet de l'année avec graphiques et analyses
+          </p>
+          <ul class="rapport-features">
+            <li>✓ Évolution mensuelle</li>
+            <li>✓ Top 10 livres de l'année</li>
+            <li>✓ Statistiques détaillées</li>
+          </ul>
+        </div>
+        <button 
+          class="rapport-btn"
+          (click)="telechargerRapportAnnuel()"
+          [disabled]="loading">
+          <span *ngIf="!loading">📥 Télécharger PDF</span>
+          <span *ngIf="loading" class="spinner-inline"></span>
+        </button>
+      </div>
+
+      <!-- Rapport Retards -->
+      <div class="rapport-card orange">
+        <div class="rapport-icon">⚠️</div>
+        <div class="rapport-content">
+          <h3 class="rapport-title">Retards & Pénalités</h3>
+          <p class="rapport-description">
+            Liste des emprunts en retard et pénalités impayées
+          </p>
+          <ul class="rapport-features">
+            <li>✓ Emprunts en retard</li>
+            <li>✓ Pénalités impayées</li>
+            <li>✓ Montants détaillés</li>
+          </ul>
+        </div>
+        <button 
+          class="rapport-btn"
+          (click)="telechargerRapportRetards()"
+          [disabled]="loading">
+          <span *ngIf="!loading">📥 Télécharger PDF</span>
+          <span *ngIf="loading" class="spinner-inline"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exports -->
+  <div class="rapports-section">
+    <h2 class="section-title">
+      <span class="section-icon">📤</span>
+      Exports de Données
+    </h2>
+
+    <div class="rapports-grid">
+      <!-- Export Inventaire -->
+      <div class="rapport-card purple">
+        <div class="rapport-icon">📚</div>
+        <div class="rapport-content">
+          <h3 class="rapport-title">Inventaire Complet</h3>
+          <p class="rapport-description">
+            Liste complète de tous les livres et exemplaires
+          </p>
+          <ul class="rapport-features">
+            <li>✓ Tous les livres</li>
+            <li>✓ Stock et disponibilité</li>
+            <li>✓ Format Excel</li>
+          </ul>
+        </div>
+        <button 
+          class="rapport-btn"
+          (click)="exporterInventaire()"
+          [disabled]="loading">
+          <span *ngIf="!loading">📊 Exporter Excel</span>
+          <span *ngIf="loading" class="spinner-inline"></span>
+        </button>
+      </div>
+
+      <!-- Export Emprunts CSV -->
+      <div class="rapport-card pink">
+        <div class="rapport-icon">📋</div>
+        <div class="rapport-content">
+          <h3 class="rapport-title">Liste des Emprunts</h3>
+          <p class="rapport-description">
+            Export de tous les emprunts au format CSV
+          </p>
+          <ul class="rapport-features">
+            <li>✓ Tous les emprunts</li>
+            <li>✓ Format universel CSV</li>
+            <li>✓ Compatible Excel</li>
+          </ul>
+        </div>
+        <button 
+          class="rapport-btn"
+          (click)="exporterEmpruntsCSV()"
+          [disabled]="loading">
+          <span *ngIf="!loading">📄 Exporter CSV</span>
+          <span *ngIf="loading" class="spinner-inline"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <div class="info-section">
+    <h3 class="info-title">
+      <span class="info-icon">💡</span>
+      À propos des rapports
+    </h3>
+    <div class="info-grid">
+      <div class="info-card">
+        <span class="info-emoji">📄</span>
+        <h4>Format PDF</h4>
+        <p>Les rapports sont générés au format PDF, prêts à être imprimés ou archivés.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="info-emoji">📊</span>
+        <h4>Format Excel/CSV</h4>
+        <p>Les exports de données sont disponibles en Excel ou CSV pour analyse avancée.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="info-emoji">⚡</span>
+        <h4>Génération rapide</h4>
+        <p>Les rapports sont générés en quelques secondes avec les données les plus récentes.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="info-emoji">🔒</span>
+        <h4>Sécurisé</h4>
+        <p>Seuls les administrateurs et bibliothécaires peuvent générer ces rapports.</p>
+      </div>
+    </div>
+  </div>
+</div>
