@@ -125,6 +125,7 @@
 
         <!-- Actions principales -->
         <div class="main-actions">
+
           <button 
             *ngIf="livre.est_disponible"
             (click)="emprunter()" 
@@ -137,18 +138,12 @@
             </span>
           </button>
 
-          <button 
-            *ngIf="!livre.est_disponible && isAuthenticated"
-            class="btn btn-secondary"
-            (click)="reserverLivre()">
-            <span class="btn-icon">📚</span>
-            Réserver ce livre
-          </button>
 
+           <!-- Bouton Réserver (si indisponible) -->
           <button 
             *ngIf="!livre.est_disponible"
-            (click)="reserver()" 
-            class="btn btn-outline btn-lg btn-reserver">
+            (click)="reserverLivre()" 
+            class="btn btn-secondary btn-lg">
             <span>🔔</span>
             Réserver ce livre
           </button>

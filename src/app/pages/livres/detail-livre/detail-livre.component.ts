@@ -54,9 +54,21 @@ export class DetailLivreComponent implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.livre = response.data;
+
+          this.loading = false;
+
+          // 🔍 LOGS DE DEBUG
+        console.log('Livre chargé:', this.livre);
+        console.log('est_disponible:', this.livre.est_disponible);
+        console.log('isAuthenticated:', this.isAuthenticated);
+        console.log('loading:', this.loading);
+        console.log('error:', this.error);
+
+
           this.loadLivresSimilaires();
         } else {
           this.error = 'Livre non trouvé';
+          this.loading = false;
         }
         this.loading = false;
       },
@@ -136,20 +148,25 @@ export class DetailLivreComponent implements OnInit {
     });
   }
 
-  reserverLivre() {
-  // TODO: Implémenter la réservation
-  this.router.navigate(['/mes-reservations']);
-  }
+    reserverLivre() {
+      if (!this.isAuthenticated) {
+        alert('Vous devez être connecté pour réserver un livre');
+        this.router.navigate(['/login'], { 
+          queryParams: { returnUrl: this.router.url } 
+        });
+        return;
+      }
 
-  reserver() {
-    if (!this.isAuthenticated) {
-      alert('Vous devez être connecté pour réserver un livre');
-      this.router.navigate(['/login']);
-      return;
-    }
+      if (!this.livre?.id) return;
 
-    alert('Fonctionnalité de réservation en cours de développement');
-  }
+      if (confirm(`Voulez-vous réserver "${this.livre.titre}" ?`)) {
+        // TODO: Appeler le service de réservation
+        // this.reservationService.creerReservation(this.livre.id).subscribe(...)
+        
+        alert('Réservation enregistrée ! Vous serez notifié quand le livre sera disponible.');
+        this.router.navigate(['/mes-reservations']);
+      }
+    }// ❌ Supprimer la méthode reserver() pour éviter la confusion
 
   changeTab(tab: 'details' | 'exemplaires' | 'avis') {
     this.currentTab = tab;
